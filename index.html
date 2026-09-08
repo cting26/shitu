@@ -1079,7 +1079,7 @@
       return new Promise(function (res, rej) {
         var im = new Image();
         im.onload = function () {
-          var sc = Math.min(1, (max || 512) / Math.max(im.width, im.height));
+          var sc = Math.min(1, (max || 900) / Math.max(im.width, im.height));
           if (sc >= 1) { res(dataUrl); return; }
           var cv = document.createElement("canvas");
           cv.width = Math.max(1, Math.round(im.width * sc));
@@ -1092,7 +1092,7 @@
       });
     }
     function aiAnalyze(dataUrl, cb) {
-      downscale(dataUrl, 512).then(function (small) {
+      downscale(dataUrl, 900).then(function (small) {
         var h = { "Content-Type": "application/json" };
         var tk = aiToken();
         if (tk) h["x-access-token"] = tk;

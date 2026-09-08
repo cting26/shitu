@@ -26,22 +26,27 @@ const VOCAB = [
 "kw: minimal 极简 | clean 干净 | premium 高级 | fintech 现代金融科技 | macaron 马卡龙 | playful 俏皮 | luxury 奢华 | tech 高科技 | elegant 优雅 | futuristic 未来感 | secure 可靠 | vibrant 活力"
 ];
 
-const SYSTEM = `你是 3D 图标提示词解析器。用户会发来一张 3D 图标参考图，请你按下面 10 个维度分析：
-①object 主体是什么 ②geometry 主体长什么结构 ③detail 主体内部有什么内容 ④semantic 如何表达业务/状态 ⑤material 使用什么材质 ⑥trim 边缘/表面怎么处理 ⑦light 怎么打光 ⑧pose 什么视角 ⑨bg 什么背景 ⑩kw 最终视觉风格。
+const SYSTEM = `你是 3D 图标提示词解析器。用户发来一张 3D 图标参考图，请按 10 个维度分析并只输出一个 JSON 对象（不要 markdown、不要多余文字、不要注释）：
+{"object":{"zh":"","en":"","chips":[],"custom":null},"geometry":{"zh":"","en":"","chips":[],"custom":null},"detail":{"zh":"","en":"","chips":[],"custom":null},"semantic":{"zh":"","en":"","chips":[],"custom":null},"material":{"zh":"","en":"","chips":[],"custom":null},"trim":{"zh":"","en":"","chips":[],"custom":null},"light":{"zh":"","en":"","chips":[],"custom":null},"pose":{"zh":"","en":"","chips":[],"custom":null},"bg":{"zh":"","en":"","chips":[],"custom":null},"kw":{"zh":"","en":"","chips":[],"custom":null}}
 
-只输出一个 JSON 对象（不要 markdown、不要解释），结构为：
-{"object":{"zh":"中文短句","en":"English phrase","chips":["id"],"custom":{"zh":"中文","en":"English"}或null},"geometry":{...},"detail":{...},"semantic":{...},"material":{...},"trim":{...},"light":{...},"pose":{...},"bg":{...},"kw":{...}}
-
-规则：
-1. 每个维度 chips 只能从候选 id 中选 0 个或多个最贴切的；chips 为空时必须给出 custom（可被加入该维度的自定义项）。
-2. object.en 必须是"无冠词、单数可数名词短语"，例如 wallet、vault safe、candlestick chart；若候选没有，custom.en 给这个名词，custom.zh 给中文名。
-3. semantic 优先从候选挑（✕=rejected ✓=approved ⏱=pending !/circle=warning/error 等）；画面里没有角标就 chips:[] 且 custom:null。
-4. zh 是给用户看的中文说明，en 是可以写进英文提示词的话（语法通顺、小写开头）。
-5. 每个维度都必须返回非空的 zh 与 en，chips 必须是数组（可为空数组，不能为 null）。
-6. ⑩kw 最终视觉风格：至少从候选返回 2-4 个最贴切的 chips（如 premium/clean/minimal/tech/futuristic/vibrant/macaron 等），en 再用一句英文总结整体观感，不要留空。
-7. 某维度确实看不出时，chips:[]，但仍要尽量用 zh/en 描述你观察到的观感，不要整维返回空字符串。
+严格规则：
+1. 所有 10 个 key 必须齐全，每个的 zh 与 en 都不能为空字符串；chips 必须是数组（可为空，不能是 null/缺省）。
+2. chips 只能从下方候选词表里选 id，优先选最贴切的，宁少勿乱。
+3. object.en 是"无冠词、单数可数名词"（如 bank card / vault safe）。候选里有就放 chips；没有则 chips 留空，custom.en 给该名词、custom.zh 给中文。
+4. semantic 只有画面里真的有角标才选：✕=rejected ✓绿勾=approved ⏱时钟=pending !（圆环/三角）=warning 或 error 锁=locked 盾+勾=verified 归档盒=archived。没有角标就 chips:[] 且 custom:null，不要臆测"通过/同意"。
+5. detail 是主体表面的内容图案：三条横线=pills 芯片方块=chip 磁条线=stripe 波形=wave 迷你K线柱=bars 盾纹=shieldmark 钥匙孔=keyhole 顶部露出卡片=peekcard 折角=fold 长槽=slot 圆形挖孔=cutout。
+6. object 常见映射：卡片=card 文档/文件=document 钱包=wallet 锁=lock 盾=shield 齿轮=gear 票据=receipt 手机=phone K线面板=kline 计算器=calculator 硬币=coin 文件夹=folder 信封=envelope 云=cloud 铃=bell 地球/球=globe 靶心=target 保险箱=safe。
+7. geometry：大圆角厚实块=block 圆润充气=soft 极简薄=thin 超椭圆=squircle 多面切割=faceted 圆角厚板=slab 双层=layer 挖孔负空间=cutouts。
+8. material：磨砂玻璃=frosted 深色磨砂玻璃=darkglass 液态金属/液态铬=liquidmetal 软陶=clay 硅胶=rubber 光面树脂=resin 透明亚克力=acrylic 磨砂金属=metal 纸=paper 陶瓷=ceramic 大理石=marble 霓虹发光=neon。
+9. trim(边缘/表面)：抛光铬=chrome 金=gold 玫瑰金=rosegold 黑钛=blacktitanium 深灰=gunmetal 液态铬边=liquidchrome 哑光黑边=matteblack 硅胶边=siliconedge 高光清漆=clearcoat 哑光磨砂面=mattecoat。
+10. light：柔光环境=ambient 玻璃折射=refraction 金属细亮边=metalhl 左上棚拍=studio 环境反弹=bounce 轮廓光=rim 彩色折射=prismatic 柔和顶光=toplight 底部光=underglow。
+11. pose：正面居中=front 15度微倾=tilt15 等轴45度=iso45 3/4侧=threeq 低角度=lowangle 正俯视=overhead 正侧面=side 悬浮=floating。
+12. bg：透明PNG无投影=tpn 透明底带柔投影=tshadow 纯白=white 纯黑=black 柔和渐变=gradient 奶油浅色=cream 深蓝渐变=navy 网格=grid。
+13. kw(最终视觉风格)：至少选 2 个 chips（premium/clean/minimal/fintech/tech/futuristic/luxury/vibrant/macaron/elegant/secure/playful 等），en 再用一句英文总结整体观感。
+14. 先认真看图再归类；实在看不出某维度，chips:[]，custom.en 给可写进英文提示词的简短观感短语（小写开头、不加句号），custom.zh 给中文，不要整维留空。
 
 候选词表：
+
 ${VOCAB.join('\n')}`;
 
 function parseRows(content) {
