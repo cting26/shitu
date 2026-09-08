@@ -108,6 +108,10 @@
   #ipb .ipb-ai-set-grid label { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 6px; }
   #ipb .ipb-ai-set-grid input { font: inherit; font-size: 11.5px; color: var(--fg); background: #101316; border: 1px solid var(--line); border-radius: 7px; padding: 4px 7px; }
 
+  #ipb .ipb-ai-set-actions { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  #ipb .ipb-ai-set-actions .ipb-btn { min-height: 26px; padding: 0 10px; }
+  #ipb .ipb-ai-saved { font-size: 11px; color: #6fce8f; font-weight: 650; }
+
   @media (min-width: 881px) { #ipb .ipb-out { position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; } }
   @media (max-width: 560px) { #ipb .ipb-editrow { grid-template-columns: minmax(0, 1fr); } }
 </style>
@@ -138,6 +142,10 @@
       <div class="ipb-ai-set-grid">
         <label><span>服务地址</span><input id="ipb-ai-url" type="text" placeholder="https://你的域名（留空 = 自动：本地 127.0.0.1:8790 或本站 /api）"></label>
         <label><span>访问口令</span><input id="ipb-ai-token" type="text" placeholder="可选，与后端 ACCESS_TOKEN 一致"></label>
+      </div>
+      <div class="ipb-ai-set-actions">
+        <button type="button" class="ipb-btn ipb-btn-primary" id="ipb-ai-save">保存设置</button>
+        <span class="ipb-ai-saved" id="ipb-ai-saved" role="status" aria-live="polite"></span>
       </div>
     </details>
     <p class="ipb-ai-note" id="ipb-ai-note" hidden></p>
@@ -1046,17 +1054,26 @@
       if (stateEl) { stateEl.textContent = txt; stateEl.className = "ipb-ai-state" + (cls ? " " + cls : ""); }
     }
     setAiState("AI 服务：未连接（仅本地启发式。双击「启动3D图标AI服务.command」或打开 http://127.0.0.1:8790 后自动启用）", "warn");
+    function saveAiSettings(showMsg) {
+      if (!$id("ipb-ai-url")) return;
+      var u = $id("ipb-ai-url").value.trim(), t = $id("ipb-ai-token").value.trim();
+      if (u) localStorage.setItem("ipb_ai_base", u); else localStorage.removeItem("ipb_ai_base");
+      if (t) localStorage.setItem("ipb_ai_token", t); else localStorage.removeItem("ipb_ai_token");
+      if (showMsg) {
+        var el = $id("ipb-ai-saved");
+        if (el) {
+          el.textContent = "✓ 已保存并生效";
+          setTimeout(function () { if (el) el.textContent = ""; }, 2200);
+        }
+        if (lastDataUrl) { setAiState("设置已保存：可重新上传图片，或点 ✨ AI 精析 立即生效", "ok"); }
+      }
+    }
     if ($id("ipb-ai-url")) {
       $id("ipb-ai-url").value = localStorage.getItem("ipb_ai_base") || "";
       $id("ipb-ai-token").value = localStorage.getItem("ipb_ai_token") || "";
-      $id("ipb-ai-url").addEventListener("change", function () {
-        var v = $id("ipb-ai-url").value.trim();
-        if (v) localStorage.setItem("ipb_ai_base", v); else localStorage.removeItem("ipb_ai_base");
-      });
-      $id("ipb-ai-token").addEventListener("change", function () {
-        var v = $id("ipb-ai-token").value.trim();
-        if (v) localStorage.setItem("ipb_ai_token", v); else localStorage.removeItem("ipb_ai_token");
-      });
+      $id("ipb-ai-url").addEventListener("change", function () { saveAiSettings(false); });
+      $id("ipb-ai-token").addEventListener("change", function () { saveAiSettings(false); });
+      $id("ipb-ai-save").addEventListener("click", function () { saveAiSettings(true); });
     }
     function downscale(dataUrl, max) {
       return new Promise(function (res, rej) {
