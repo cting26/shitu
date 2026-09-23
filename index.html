@@ -191,6 +191,54 @@
   #ipb .ipb-analyze .ipb-progwrap { margin-top: 7px; height: 6px; }
   #ipb .ipb-analyze .ipb-progtext { font-size: 10.5px; margin-top: 4px; }
 
+
+  /* ===== v3.0 即梦风格皮肤（Jimeng design tokens，结构不变）===== */
+  #ipb { --bg: #0F1115; --card: #17191D; --card2: #1F2229; --fg: #F5FBFF; --muted: #72808A;
+         --line: rgba(204,221,255,.14); --accent: #00A1C2; --accentfg: #EAFDFF; --primary: #00B8CC; --warn: #FFA21E;
+         font-family: "CapCut Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+         background: radial-gradient(1200px 820px at 50% -14%, #1B2029 0%, #12151A 52%, #0F1115 100%); }
+  #ipb .ipb-title { font-size: 24px; font-weight: 800; letter-spacing: -.2px; color: #FFFFFF; }
+  #ipb .ipb-sub { font-size: 13px; color: #72808A; }
+  #ipb .ipb-group-head { margin: 24px 0 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #4FB6CC; }
+  #ipb .ipb-group-head::after { background: rgba(204,221,255,.10); }
+  #ipb section.ipb-step { border-radius: 16px; padding: 16px 18px 18px;
+      background: linear-gradient(114deg, #232B35 -18.32%, #1F2229 58.59%);
+      border: 1px solid rgba(204,221,255,.10); box-shadow: inset 0 1px 0 rgba(224,245,255,.06); }
+  #ipb .ipb-step-head h3 { font-size: 15px; font-weight: 750; color: #F5FBFF; }
+  #ipb .ipb-num { min-width: 24px; height: 24px; border-radius: 8px; background: rgba(0,161,194,.20); color: #4FDCEE; border: 1px solid rgba(0,202,224,.30); font-size: 13px; font-weight: 800; }
+  #ipb .ipb-count { font-size: 12px; color: #72808A; }
+  #ipb .ipb-hint { margin: 6px 0 12px; font-size: 12.5px; line-height: 1.55; color: #72808A; }
+  #ipb .ipb-chips { gap: 8px; }
+  #ipb label.ipb-chip { padding: 5px 14px; border-radius: 999px; font-size: 13px; color: #E0F5FF;
+      background: rgba(204,221,255,.08); border: 1px solid rgba(204,221,255,.10); }
+  #ipb label.ipb-chip:hover { background: rgba(204,221,255,.16); border-color: rgba(0,202,224,.45); }
+  #ipb label.ipb-chip:has(input:checked) { background: rgba(0,161,194,.22); border-color: rgba(0,202,224,.55);
+      color: #6FE6F7; font-weight: 700; box-shadow: 0 0 0 1px rgba(0,202,224,.18), 0 6px 18px -10px rgba(0,202,224,.6); }
+  #ipb select.ipb-ctrl, #ipb input.ipb-ctrl { background: rgba(15,17,21,.85); border: 1px solid rgba(204,221,255,.14);
+      border-radius: 12px; padding: 9px 12px; font-size: 13px; color: #F5FBFF; }
+  #ipb select.ipb-ctrl:focus-visible, #ipb input.ipb-ctrl:focus-visible { border-color: rgba(0,202,224,.6); }
+  #ipb .ipb-btn { min-height: 34px; padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 600;
+      background: rgba(204,221,255,.08); border: 1px solid rgba(204,221,255,.10); color: #EAF6FF; }
+  #ipb .ipb-btn:hover { background: rgba(204,221,255,.16); border-color: rgba(0,202,224,.45); }
+  #ipb .ipb-btn-primary { background: linear-gradient(135deg, #00B8CC 0%, #00A1C2 100%); color: #04222A;
+      border-color: transparent; font-weight: 800; box-shadow: 0 8px 24px -14px rgba(0,202,224,.9); }
+  #ipb .ipb-btn-primary:hover { filter: brightness(1.06); }
+  #ipb .ipb-editarea { margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(204,221,255,.12); }
+  #ipb .ipb-editrow input.ipb-edit { background: rgba(15,17,21,.85); border: 1px solid rgba(204,221,255,.14); border-radius: 10px; padding: 7px 10px; font-size: 12.5px; }
+  #ipb .ipb-out { border-radius: 20px; padding: 18px; background: linear-gradient(114deg, #232B35 -18.32%, #1F2229 58.59%);
+      border: 1px solid rgba(204,221,255,.10); box-shadow: inset 0 1px 0 rgba(224,245,255,.06); }
+  #ipb .ipb-out-title { font-size: 15px; font-weight: 750; }
+  #ipb textarea.ipb-prompt { background: #0B0E12; border: 1px solid rgba(204,221,255,.12); border-radius: 12px; padding: 14px;
+      font-size: 13px; line-height: 1.62; color: #EAF6FF; }
+  #ipb .ipb-pill { background: rgba(0,161,194,.16); color: #6FE6F7; border: 1px solid rgba(0,202,224,.28); font-size: 11px; }
+  #ipb .ipb-status, #ipb .ipb-note { font-size: 12px; color: #72808A; }
+  #ipb .ipb-drop { border: 1.5px dashed rgba(0,202,224,.40); border-radius: 14px; background: rgba(0,161,194,.06); }
+  #ipb .ipb-decorcard { border-radius: 14px; background: rgba(204,221,255,.05); border: 1px solid rgba(204,221,255,.10); }
+  #ipb .ipb-decorcard-title { color: #6FE6F7; font-size: 13px; }
+  #ipb .ipb-progbar { background: linear-gradient(90deg, #5F94FC, #1BFEFE); }
+  #ipb .ipb-ai-badge { background: rgba(0,161,194,.20); color: #6FE6F7; }
+  #ipb .ipb-analyze .ipb-hint { font-size: 12px; }
+
   @media (max-width: 560px) { #ipb .ipb-editrow { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
