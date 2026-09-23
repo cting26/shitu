@@ -137,7 +137,46 @@
   #ipb .ipb-progbar { height: 100%; width: 0%; background: linear-gradient(90deg, #f2c45c, #dfa439); transition: width .3s ease; }
   #ipb .ipb-progtext { margin: 5px 0 0; font-size: 11.5px; color: var(--muted); }
 
-  @media (min-width: 881px) { #ipb .ipb-out { position: sticky; top: 14px; margin-top: 47px; max-height: calc(100vh - 28px); overflow-y: auto; } }
+  @media (min-width: 881px) { #ipb .ipb-out { position: sticky; top: 14px; margin-top: 54px; max-height: calc(100vh - 28px); overflow-y: auto; } }
+
+  /* ===== v2.1 视觉风格：参考 The Quiz（冷黑 + 暖米色 + 低对比卡片） ===== */
+  #ipb { --bg: #07080B; --card: #141216; --card2: #1B181C; --fg: #F2F0EE; --muted: #9A9591;
+         --line: rgba(255,255,255,.08); --accent: #C9A27A; --accentfg: #1B1208; --primary: #C9A27A; --warn: #E0B36A;
+         background: radial-gradient(1100px 760px at 50% -12%, #101116 0%, #0A0B0F 55%, #050609 100%); }
+  #ipb .ipb-title { font-size: 21px; font-weight: 780; letter-spacing: .1px; color: #F5F2EF; }
+  #ipb .ipb-sub { font-size: 12.5px; color: var(--muted); }
+  #ipb .ipb-layout { gap: 16px; }
+  #ipb .ipb-steps { gap: 12px; }
+  #ipb .ipb-group-head { margin: 22px 0 4px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #BFA184; }
+  #ipb .ipb-group-head::after { background: rgba(255,255,255,.07); }
+  #ipb section.ipb-step { border-radius: 18px; padding: 14px 16px 16px; background: linear-gradient(180deg, #151317, #100F12); border: 1px solid rgba(255,255,255,.07); box-shadow: inset 0 1px 0 rgba(255,255,255,.035); }
+  #ipb .ipb-step-head { gap: 10px; }
+  #ipb .ipb-step-head h3 { font-size: 14px; font-weight: 720; letter-spacing: .1px; color: #F1EDE9; }
+  #ipb .ipb-num { min-width: 22px; height: 22px; border-radius: 7px; background: rgba(201,162,122,.55); color: #1B1208; font-size: 12.5px; font-weight: 800; border: 0; }
+  #ipb .ipb-count { font-size: 11px; color: #8E8884; }
+  #ipb .ipb-hint { margin: 5px 0 10px; font-size: 11.5px; color: #918B87; line-height: 1.55; }
+  #ipb .ipb-chips { gap: 7px; }
+  #ipb label.ipb-chip { padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.09); color: #E7E3DF; font-size: 12px; }
+  #ipb label.ipb-chip:hover { border-color: rgba(201,162,122,.55); }
+  #ipb label.ipb-chip:has(input:checked) { background: linear-gradient(180deg, #D9B58D, #BB8E62); border-color: transparent; color: #1B1208; font-weight: 700; box-shadow: 0 4px 14px -8px rgba(201,162,122,.6); }
+  #ipb select.ipb-ctrl, #ipb input.ipb-ctrl { background: #0C0B0E; border: 1px solid rgba(255,255,255,.09); border-radius: 11px; padding: 8px 11px; font-size: 12.5px; }
+  #ipb .ipb-btn { min-height: 32px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.10); color: #EDE9E5; font-size: 12.5px; }
+  #ipb .ipb-btn:hover { border-color: rgba(201,162,122,.55); }
+  #ipb .ipb-btn-primary { background: linear-gradient(180deg, #D9B58D, #BB8E62); color: #1B1208; font-weight: 750; border-color: transparent; box-shadow: 0 6px 18px -10px rgba(201,162,122,.7); }
+  #ipb .ipb-editarea { margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,.07); }
+  #ipb .ipb-editrow input.ipb-edit { background: #0C0B0E; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: 6px 10px; font-size: 12px; }
+  #ipb .ipb-custom { margin-top: 12px; gap: 8px; }
+  #ipb .ipb-out { border-radius: 18px; padding: 16px; background: linear-gradient(180deg, #151317, #100F12); border: 1px solid rgba(255,255,255,.07); box-shadow: inset 0 1px 0 rgba(255,255,255,.035); }
+  #ipb .ipb-out-title { font-size: 14px; font-weight: 720; }
+  #ipb textarea.ipb-prompt { background: #0A090C; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 12px; font-size: 12.5px; line-height: 1.62; }
+  #ipb .ipb-pill { background: rgba(201,162,122,.14); color: #D3B08A; border: 1px solid rgba(201,162,122,.28); font-size: 10.5px; }
+  #ipb .ipb-status, #ipb .ipb-note { font-size: 11.5px; color: #918B87; }
+  #ipb .ipb-drop { border: 1.5px dashed rgba(201,162,122,.45); border-radius: 16px; background: rgba(201,162,122,.05); padding: 24px 16px; }
+  #ipb .ipb-decorcard { border-radius: 14px; padding: 12px; background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.07); }
+  #ipb .ipb-decorcard .ipb-decorcard-title { color: #D3B08A; font-size: 12.5px; }
+  #ipb .ipb-progbar { background: linear-gradient(90deg, #D9B58D, #B98A5F); }
+  #ipb .ipb-ai-badge { background: rgba(201,162,122,.16); color: #D3B08A; }
+
   @media (max-width: 560px) { #ipb .ipb-editrow { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
