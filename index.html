@@ -120,6 +120,18 @@
   #ipb .ipb-thick label { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--fg); }
   #ipb .ipb-thick input { accent-color: var(--accent); }
 
+  #ipb .ipb-group-head { display: flex; align-items: center; gap: 8px; margin: 16px 0 2px; font-size: 12px; font-weight: 800; letter-spacing: .3px; color: var(--accent); }
+  #ipb .ipb-group-head::after { content: ""; flex: 1; height: 1px; background: color-mix(in srgb, var(--accent) 25%, transparent); }
+  #ipb .ipb-ai-badge { margin-left: auto; font-size: 9.5px; font-weight: 800; padding: 1px 6px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
+  #ipb .ipb-thick input.ipb-thick-custom { margin-left: 4px; flex: 1 1 220px; min-width: 140px; font: inherit; font-size: 11.5px; color: var(--fg); background: #101316; border: 1px solid var(--line); border-radius: 7px; padding: 4px 7px; }
+
+  #ipb .ipb-decorcard { border: 1px solid var(--line); border-radius: 12px; padding: 9px 10px; margin-top: 8px; background: rgba(255,255,255,.02); }
+  #ipb .ipb-decorcard-title { font-size: 12px; font-weight: 750; margin-bottom: 6px; color: var(--accent); }
+  #ipb .ipb-decorcard .ipb-edit-cap { margin-top: 6px; }
+
+  #ipb .ipb-editrow .ipb-bil { display: grid; gap: 3px; min-width: 0; }
+  #ipb .ipb-editrow .ipb-bil input { width: 100%; }
+
   @media (min-width: 881px) { #ipb .ipb-out { position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; } }
   @media (max-width: 560px) { #ipb .ipb-editrow { grid-template-columns: minmax(0, 1fr); } }
 </style>
@@ -224,9 +236,7 @@
   };
 
   var MODULES = [
-    { key: "recipe", num: "配方", title: "风格配方 Style recipe", kind: "recipe",
-      hint: "可多选 · 每个配方 = 一组风格参数，勾选即叠加组合（可自由搭配）；也支持下方补充风格说明" },
-    { key: "object", num: "①", title: "主体是什么 · Subject / Object", kind: "object",
+    { key: "object", num: "①", title: "主体是什么 · Subject", group: "subject", kind: "object",
       hint: "可多选 · 必选至少一项：勾选多个载体 = 一次生成多条提示词；也支持＋新增自定义物体",
       chips: [
         { id: "document", label: "文档 Document", shape: "rounded-rectangle", noun: "document" },
@@ -248,62 +258,7 @@
         { id: "phone", label: "手机 Smartphone", shape: "rounded-rectangle", noun: "smartphone" },
         { id: "globe", label: "地球 Globe", shape: "circular", noun: "globe" }
       ] },
-    { key: "geometry", num: "②", title: "主体长什么结构 · Structure / Geometry", kind: "chips", multi: true,
-      hint: "可选 · 可多选：圆角 / 倒角 / 厚度等造型语言；勾选后可改文案",
-      chips: [
-        { id: "block", label: "大圆角倒角实心块", en: "large rounded corners, chamfered edges, thick 3D object like a solid glass block" },
-        { id: "soft", label: "圆润充气软块", en: "large rounded corners and a chunky, softly inflated 3D body" },
-        { id: "thin", label: "极简薄板", en: "thin, clean edges with a lightweight minimal 3D silhouette" },
-        { id: "squircle", label: "超椭圆轮廓 Squircle body", en: "a squircle body outline with perfectly balanced rounded corners" },
-        { id: "faceted", label: "多面切割 Crystal-cut facets", en: "crystal-cut faceted surfaces catching light" }
-,
-        { id: "slab", label: "圆角厚板 Rounded slab", en: "a thick rounded slab silhouette" },
-        { id: "layer", label: "双层叠加 Double layer", en: "a two-layer stacked body with a visible seam" },
-        { id: "cutouts", label: "负空间挖孔 Negative space", en: "subtle negative-space cutouts through the body" }
-      ] },
-    { key: "detail", num: "③", title: "主体内部有什么内容 · Inner details", kind: "chips", multi: true,
-      hint: "可选 · 可多选：勾选后可在下方直接修改该句英文；不选 = 纯留白主体",
-      chips: [
-        { id: "pills", label: "三条内容线 短—长—短", en: "three horizontal rounded pill-shaped lines: a short line at the top, a longer line in the middle, and a short line at the bottom" },
-        { id: "chip", label: "芯片 Chip（卡片）", en: "a small rounded chip near the left edge" },
-        { id: "stripe", label: "磁条 Stripe（卡片）", en: "two thin horizontal pill-shaped lines across the middle" },
-        { id: "wave", label: "波形线 Waveform", en: "a soft wavy line across the middle" },
-        { id: "bars", label: "迷你K线 Candlestick bars", en: "three small rounded candlestick bars of different heights" },
-        { id: "shieldmark", label: "盾形纹理 Shield emblem", en: "a subtle shield-shaped emblem in the center" },
-        { id: "keyhole", label: "钥匙孔 Keyhole", en: "a small rounded keyhole in the center" },
-        { id: "peekcard", label: "露出的卡片 Card peeking", en: "a small rounded card peeking out from the top edge" },
-        { id: "fold", label: "折角 Folded corner", en: "a folded dog-ear corner" },
-        { id: "slot", label: "卡槽 Slot", en: "a thin rounded slot near the top edge" },
-        { id: "cutout", label: "圆形挖孔 Circular cutout", en: "a small circular cutout near the center" }
-      ] },
-    { key: "semantic", num: "④", title: "如何表达业务 / 状态 · Status semantics", kind: "chips", multi: true,
-      hint: "可选 · 可多选：勾选后自动生成角标徽章句；填写该语义的文案框可用自定义句子覆盖",
-      chips: [
-        { id: "rejected", label: "✕ 拒绝 Rejected", adj: "rejected", mark: 'an "X" cross mark', color: "soft dark gray" },
-        { id: "approved", label: "✓ 通过 Approved", adj: "approved", mark: "a check mark", color: "soft green" },
-        { id: "pending", label: "⏱ 待审 / 处理中 Pending", adj: "pending", mark: "a small clock icon", color: "soft amber" },
-        { id: "warning", label: "! 警告 Warning", adj: "warning", mark: "an exclamation mark", color: "soft amber" },
-        { id: "verified", label: "◉ 认证 Verified", adj: "verified", mark: "a small verified shield check", color: "soft blue" },
-        { id: "locked", label: "🔒 锁定 Locked", adj: "locked", mark: "a small padlock symbol", color: "soft dark gray" },
-        { id: "error", label: "ⓧ 错误 Error", adj: "error", mark: "an exclamation mark inside a circle", color: "soft red" }
-,
-        { id: "archived", label: "🗄 归档 Archived", adj: "archived", mark: "a small archive box icon", color: "soft dark gray" }
-      ] },
-    { key: "decor", num: "④+", title: "主体物旁的装饰是什么 · Decorations", kind: "chips", multi: true,
-      hint: "可选 · 可多选：主体周围的装饰元素；勾选后可改文案，也可＋新增自定义",
-      chips: [
-        { id: "sparkles", label: "星光闪点 Sparkles", en: "small floating sparkles around the subject" },
-        { id: "orbit", label: "轨道环 Orbit ring", en: "a thin circular orbit ring around the subject" },
-        { id: "dots", label: "粒子点 Floating dots", en: "a few small floating dots around the subject" },
-        { id: "coins", label: "悬浮金币 Floating coins", en: "small floating coins around the subject" },
-        { id: "glow", label: "光晕 Soft glow", en: "a soft glow halo behind the subject" },
-        { id: "arrows", label: "流向箭头 Directional arrows", en: "small directional arrows nearby" },
-        { id: "minibadge", label: "小徽章 Mini badge", en: "a tiny floating badge near the subject" },
-        { id: "bubbles", label: "气泡 Bubbles", en: "translucent bubbles floating around" },
-        { id: "gridlines", label: "网格线 Grid lines", en: "thin grid lines in the background around the subject" },
-        { id: "ripple", label: "环形波纹 Ripple rings", en: "soft concentric ripple rings around the subject" }
-      ] },
-    { key: "material", num: "⑤", title: "使用什么材质 · Material", kind: "chips", multi: true,
+    { key: "material", num: "⑤", title: "主体材质 · Material", group: "subject", kind: "chips", multi: true,
       hint: "可选 · 可多选：决定主体质感；勾选后可在下方改英文描述",
       chips: [
         { id: "frosted", label: "磨砂玻璃 Frosted glass", short: "white translucent frosted glass", en: "white translucent frosted glass material with internal depth and light passing through" },
@@ -319,7 +274,22 @@
         { id: "marble", label: "抛光大理石 Polished marble", short: "polished marble", en: "polished marble with soft natural veining" },
         { id: "neon", label: "霓虹光效 Neon glow", short: "glowing neon material", en: "translucent neon material with a soft inner glow" }
       ] },
-    { key: "trim", num: "⑥", title: "边缘 / 表面怎么处理 · Edges & surface", kind: "chips", multi: true,
+    { key: "detail", num: "③", title: "主体内部内容 · Inner details", group: "subject", kind: "chips", multi: true,
+      hint: "可选 · 可多选：勾选后可在下方直接修改该句英文；不选 = 纯留白主体",
+      chips: [
+        { id: "pills", label: "三条内容线 短—长—短", en: "three horizontal rounded pill-shaped lines: a short line at the top, a longer line in the middle, and a short line at the bottom" },
+        { id: "chip", label: "芯片 Chip（卡片）", en: "a small rounded chip near the left edge" },
+        { id: "stripe", label: "磁条 Stripe（卡片）", en: "two thin horizontal pill-shaped lines across the middle" },
+        { id: "wave", label: "波形线 Waveform", en: "a soft wavy line across the middle" },
+        { id: "bars", label: "迷你K线 Candlestick bars", en: "three small rounded candlestick bars of different heights" },
+        { id: "shieldmark", label: "盾形纹理 Shield emblem", en: "a subtle shield-shaped emblem in the center" },
+        { id: "keyhole", label: "钥匙孔 Keyhole", en: "a small rounded keyhole in the center" },
+        { id: "peekcard", label: "露出的卡片 Card peeking", en: "a small rounded card peeking out from the top edge" },
+        { id: "fold", label: "折角 Folded corner", en: "a folded dog-ear corner" },
+        { id: "slot", label: "卡槽 Slot", en: "a thin rounded slot near the top edge" },
+        { id: "cutout", label: "圆形挖孔 Circular cutout", en: "a small circular cutout near the center" }
+      ] },
+    { key: "trim", num: "⑥", title: "主体边缘和表面 · Edges & surface", group: "subject", kind: "chips", multi: true,
       hint: "可选 · 可多选：第二材质点缀；勾选后可在下方改英文描述",
       chips: [
         { id: "chrome", label: "抛光铬 Chrome", en: "polished chrome metal edges with subtle iridescent rainbow refraction" },
@@ -334,7 +304,59 @@
         { id: "clearcoat", label: "高光清漆 Gloss clear coat", en: "a glossy clear coat over the entire surface" },
         { id: "mattecoat", label: "哑光磨砂面 Matte finish", en: "a soft matte frosted surface finish" }
       ] },
-    { key: "light", num: "⑦", title: "怎么打光 · Lighting", kind: "chips", multi: true,
+    { key: "decor", num: "④+", title: "旁物是什么 · Surrounding objects", group: "decor", kind: "chips", multi: true,
+      hint: "可选 · 可多选：主体周围的装饰元素；勾选后可改文案，也可＋新增自定义",
+      chips: [
+        { id: "sparkles", label: "星光闪点 Sparkles", en: "small floating sparkles around the subject" },
+        { id: "orbit", label: "轨道环 Orbit ring", en: "a thin circular orbit ring around the subject" },
+        { id: "dots", label: "粒子点 Floating dots", en: "a few small floating dots around the subject" },
+        { id: "coins", label: "悬浮金币 Floating coins", en: "small floating coins around the subject" },
+        { id: "glow", label: "光晕 Soft glow", en: "a soft glow halo behind the subject" },
+        { id: "arrows", label: "流向箭头 Directional arrows", en: "small directional arrows nearby" },
+        { id: "minibadge", label: "小徽章 Mini badge", en: "a tiny floating badge near the subject" },
+        { id: "bubbles", label: "气泡 Bubbles", en: "translucent bubbles floating around" },
+        { id: "gridlines", label: "网格线 Grid lines", en: "thin grid lines in the background around the subject" },
+        { id: "ripple", label: "环形波纹 Ripple rings", en: "soft concentric ripple rings around the subject" }
+      ] },
+    { key: "spread", num: "", title: "旁物分布 · Distribution", kind: "chips", multi: true, group: "decor",
+      hint: "可选 · 可多选：旁物围绕主体的分布方式；勾选后可改文案，也可＋新增自定义",
+      chips: [
+        { id: "around", label: "环绕四周 Around", en: "arranged all around the subject" },
+        { id: "even", label: "均匀排布 Evenly spaced", en: "evenly spaced around the subject" },
+        { id: "twosides", label: "两侧对称 On both sides", en: "placed symmetrically on both sides" },
+        { id: "floating", label: "上方漂浮 Floating above", en: "floating above the subject" },
+        { id: "scatter", label: "散布 Scattered", en: "scattered loosely nearby" },
+        { id: "corner", label: "角落聚集 Clustered in a corner", en: "clustered in one corner" },
+        { id: "ring", label: "环形围绕 Ring layout", en: "arranged in a ring around the subject" },
+        { id: "trail", label: "轨迹跟随 Trailing", en: "trailing diagonally behind the subject" }
+      ] },
+    { key: "semantic", num: "④", title: "希望表达什么业务 / 状态 · Semantics", group: "global", kind: "chips", multi: true,
+      hint: "可选 · 可多选：勾选后自动生成角标徽章句；填写该语义的文案框可用自定义句子覆盖",
+      chips: [
+        { id: "rejected", label: "✕ 拒绝 Rejected", adj: "rejected", mark: 'an "X" cross mark', color: "soft dark gray" },
+        { id: "approved", label: "✓ 通过 Approved", adj: "approved", mark: "a check mark", color: "soft green" },
+        { id: "pending", label: "⏱ 待审 / 处理中 Pending", adj: "pending", mark: "a small clock icon", color: "soft amber" },
+        { id: "warning", label: "! 警告 Warning", adj: "warning", mark: "an exclamation mark", color: "soft amber" },
+        { id: "verified", label: "◉ 认证 Verified", adj: "verified", mark: "a small verified shield check", color: "soft blue" },
+        { id: "locked", label: "🔒 锁定 Locked", adj: "locked", mark: "a small padlock symbol", color: "soft dark gray" },
+        { id: "error", label: "ⓧ 错误 Error", adj: "error", mark: "an exclamation mark inside a circle", color: "soft red" }
+,
+        { id: "archived", label: "🗄 归档 Archived", adj: "archived", mark: "a small archive box icon", color: "soft dark gray" }
+      ] },
+    { key: "pose", num: "⑧", title: "视角 · Viewpoint", group: "global", kind: "chips", multi: true,
+      hint: "可选 · 可多选：镜头角度与放置姿态；勾选后可在下方改文案",
+      chips: [
+        { id: "tilt15", label: "15° 微倾", en: "slight 15-degree tilt" },
+        { id: "iso45", label: "等轴测 45°", en: "isometric 45-degree top-down angle" },
+        { id: "front", label: "正面前视", en: "front-facing and perfectly centered" },
+        { id: "threeq", label: "3/4 侧视", en: "slight three-quarter perspective" },
+        { id: "lowangle", label: "低角度仰视 Low angle", en: "dramatic low-angle perspective" },
+        { id: "floating", label: "轻微悬浮 Floating", en: "floating slightly above the surface" }
+,
+        { id: "overhead", label: "正俯视 Bird’s-eye", en: "direct bird’s-eye view from above" },
+        { id: "side", label: "正侧面 Side profile", en: "clean side profile view" }
+      ] },
+    { key: "light", num: "⑦", title: "打光 · Lighting", group: "global", kind: "chips", multi: true,
       hint: "可选 · 可多选：光线与材质专属效果；勾选后可改文案",
       chips: [
         { id: "ambient", label: "柔光环境光", en: "soft ambient lighting" },
@@ -348,20 +370,7 @@
         { id: "toplight", label: "柔和顶光 Soft top light", en: "soft diffused top light" },
         { id: "underglow", label: "底部环境光 Under glow", en: "gentle under-glow reflecting from below" }
       ] },
-    { key: "pose", num: "⑧", title: "什么视角 · Viewpoint / Pose", kind: "chips", multi: true,
-      hint: "可选 · 可多选：镜头角度与放置姿态；勾选后可在下方改文案",
-      chips: [
-        { id: "tilt15", label: "15° 微倾", en: "slight 15-degree tilt" },
-        { id: "iso45", label: "等轴测 45°", en: "isometric 45-degree top-down angle" },
-        { id: "front", label: "正面前视", en: "front-facing and perfectly centered" },
-        { id: "threeq", label: "3/4 侧视", en: "slight three-quarter perspective" },
-        { id: "lowangle", label: "低角度仰视 Low angle", en: "dramatic low-angle perspective" },
-        { id: "floating", label: "轻微悬浮 Floating", en: "floating slightly above the surface" }
-,
-        { id: "overhead", label: "正俯视 Bird’s-eye", en: "direct bird’s-eye view from above" },
-        { id: "side", label: "正侧面 Side profile", en: "clean side profile view" }
-      ] },
-    { key: "bg", num: "⑨", title: "什么背景 · Background", kind: "chips", multi: true,
+    { key: "bg", num: "⑨", title: "背景 · Background", group: "global", kind: "chips", multi: true,
       hint: "可选 · 可多选：画布底与投影方式；勾选后可在下方改文案",
       chips: [
         { id: "tpn", label: "透明底 · 无投影", en: "transparent PNG background, no ground shadow" },
@@ -373,7 +382,7 @@
         { id: "gradient", label: "柔和渐变底 Soft gradient", en: "soft dark-to-mid gradient background" },
         { id: "grid", label: "极简网格 Minimal grid", en: "minimal light grid floor with subtle perspective" }
       ] },
-    { key: "kw", num: "⑩", title: "最终视觉风格 · Style keywords", kind: "chips", multi: true,
+    { key: "kw", num: "⑩", title: "风格定调 · Style", group: "global", kind: "chips", multi: true,
       hint: "可选 · 可多选：收尾的审美基调词；勾选后可改文案",
       chips: [
         { id: "minimal", label: "极简 Minimalist", en: "minimalist" },
@@ -389,7 +398,7 @@
         { id: "secure", label: "可靠 Trustworthy", en: "trustworthy and secure" },
         { id: "vibrant", label: "活力 Vibrant", en: "vibrant and energetic" }
       ] },
-    { key: "avoid", num: "✕", title: "不希望出现的内容 · Things to avoid", kind: "chips", multi: true,
+    { key: "avoid", num: "✕", title: "不希望出现什么 · Avoid", group: "global", kind: "chips", multi: true,
       hint: "可选 · 可多选：不希望出现在画面里的元素；部分配方会自动预选；勾选后可改文案",
       chips: [
         { id: "text", label: "无文字", en: "no text" },
@@ -405,12 +414,35 @@
       ] }
   ];
 
+  var DECOR_MATERIALS = [
+    { id: "dglass", label: "玻璃 Glass", en: "translucent glass" },
+    { id: "dmetal", label: "金属 Metal", en: "polished metal" },
+    { id: "dgold", label: "金色 Gold", en: "warm gold" },
+    { id: "dglow", label: "发光 Glowing", en: "soft glowing material" },
+    { id: "dplastic", label: "塑料 Plastic", en: "glossy plastic" },
+    { id: "dceramic", label: "陶瓷 Ceramic", en: "glazed ceramic" },
+    { id: "dneon", label: "霓虹 Neon", en: "neon light material" },
+    { id: "dfrost", label: "磨砂 Frosted", en: "frosted translucent material" }
+  ];
+  var DECOR_SURFACES = [
+    { id: "spolish", label: "抛光 Polished", en: "polished reflective surface" },
+    { id: "smatte", label: "哑光 Matte", en: "soft matte surface" },
+    { id: "sglowedge", label: "发光边 Glowing edge", en: "a soft glowing edge" },
+    { id: "schrome", label: "铬边 Chrome edge", en: "a thin chrome edge" },
+    { id: "sgoldedge", label: "金边 Gold edge", en: "a warm gold edge" },
+    { id: "sblackedge", label: "黑边 Black edge", en: "a dark matte edge" },
+    { id: "sclear", label: "清漆 Clear coat", en: "a glossy clear coat" },
+    { id: "sfrostsurf", label: "磨砂面 Frosted surface", en: "a frosted surface finish" }
+  ];
   var recipeSel = new Set(["glass"]);
   var thickness = "thick";
+  var thicknessCustom = "";
+  var decorCfg = {};
   var decorThickness = "normal";
   var badgePos = "bottom-right";
   var badgeShape = "circular";
   var sel = {}, overrides = {}, extras = {}, uid = 1;
+  var aiFlag = {};
   MODULES.forEach(function (m) {
     if (m.key === "recipe") return;
     sel[m.key] = new Set();
@@ -528,7 +560,15 @@
       });
       return div;
     }
+    var lastGroup = "";
     MODULES.forEach(function (mod, mi) {
+      if (mod.group && mod.group !== lastGroup) {
+        lastGroup = mod.group;
+        var gh = document.createElement("div");
+        gh.className = "ipb-group-head";
+        gh.textContent = mod.group === "subject" ? "主体 Primary subject" : (mod.group === "decor" ? "旁物 Surrounding elements" : "全局 Global");
+        host.appendChild(gh);
+      }
       var section = document.createElement("section");
       section.className = "ipb-step";
       section.setAttribute("aria-labelledby", "ipb-h-" + mod.key);
@@ -544,7 +584,14 @@
       var count = document.createElement("span");
       count.className = "ipb-count";
       count.dataset.countFor = mod.key;
-      head.appendChild(num); head.appendChild(h3); head.appendChild(count);
+      head.appendChild(num); head.appendChild(h3);
+      if (aiFlag[mod.key]) {
+        var ab = document.createElement("span");
+        ab.className = "ipb-ai-badge";
+        ab.textContent = "AI";
+        head.appendChild(ab);
+      }
+      head.appendChild(count);
 
       var hint = document.createElement("p");
       hint.className = "ipb-hint";
@@ -568,17 +615,15 @@
       } else {
         section.appendChild(chipGroup(mod.key, mod.chips, function (id) { return sel[mod.key].has(id); }));
 
-        if (mod.key === "geometry" || mod.key === "decor") {
-          var isGeo = mod.key === "geometry";
-          var cur = isGeo ? thickness : decorThickness;
-          var gname = isGeo ? "ipb-thick" : "ipb-decor-thick";
+        if (mod.key === "trim") {
           var th = document.createElement("div");
           th.className = "ipb-thick";
           th.innerHTML =
-            '<span class="ipb-edit-cap">厚度 Thickness</span>' +
-            '<label><input type="radio" name="' + gname + '" value="thick"' + (cur === "thick" ? " checked" : "") + '> 厚实 Thick / chunky</label>' +
-            '<label><input type="radio" name="' + gname + '" value="normal"' + (cur === "normal" ? " checked" : "") + '> 正常 Moderate</label>' +
-            '<label><input type="radio" name="' + gname + '" value="thin"' + (cur === "thin" ? " checked" : "") + '> 极薄 Ultra-thin</label>';
+            '<span class="ipb-edit-cap">主体厚度 Thickness</span>' +
+            '<label><input type="radio" name="ipb-thick" value="thick"' + (thickness === "thick" ? " checked" : "") + '> 厚实 Thick / chunky</label>' +
+            '<label><input type="radio" name="ipb-thick" value="normal"' + (thickness === "normal" ? " checked" : "") + '> 正常 Moderate</label>' +
+            '<label><input type="radio" name="ipb-thick" value="thin"' + (thickness === "thin" ? " checked" : "") + '> 极薄 Ultra-thin</label>' +
+            '<input class="ipb-thick-custom" id="ipb-thick-custom" type="text" placeholder="自定义厚度（可选，自然语言：noticeably thick, about 20% of its width）" value="' + String(thicknessCustom).replace(/"/g, "&quot;") + '">';
           section.appendChild(th);
         }
 
@@ -608,6 +653,92 @@
 
       host.appendChild(section);
     });
+
+    // ---- 旁物逐个设置（材质 / 表面 / 厚度）----
+    var decorItems = [];
+    selectedChips("decor").forEach(function (c) { decorItems.push({ id: c.id, text: textFor("decor", c), label: c.label }); });
+    (extras["decor"] || []).forEach(function (it) {
+      var t = String(it.text || "").trim();
+      if (t) decorItems.push({ id: it.id, text: t, label: it.zh || t });
+    });
+    if (decorItems.length) {
+      var dsec = document.createElement("section");
+      dsec.className = "ipb-step ipb-decorcfg";
+      var dhead = document.createElement("div");
+      dhead.className = "ipb-step-head";
+      var dnum = document.createElement("span");
+      dnum.className = "ipb-num";
+      dnum.textContent = "⑤⑥";
+      var dh = document.createElement("h3");
+      dh.textContent = "每个旁物的材质 / 表面 / 厚度（逐个设置）";
+      var dcount = document.createElement("span");
+      dcount.className = "ipb-count";
+      dcount.textContent = decorItems.length + " 个旁物";
+      dhead.appendChild(dnum); dhead.appendChild(dh); dhead.appendChild(dcount);
+      var dhint = document.createElement("p");
+      dhint.className = "ipb-hint";
+      dhint.textContent = "每个旁物单独设置材质、表面与厚度；不设置则只输出旁物本身。";
+      dsec.appendChild(dhead); dsec.appendChild(dhint);
+
+      decorItems.forEach(function (item) {
+        var cfg = decorCfg[item.id] || (decorCfg[item.id] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        var card = document.createElement("div");
+        card.className = "ipb-decorcard";
+        var ct = document.createElement("div");
+        ct.className = "ipb-decorcard-title";
+        ct.textContent = item.label || item.text;
+        card.appendChild(ct);
+
+        var ml = document.createElement("div");
+        ml.className = "ipb-edit-cap";
+        ml.textContent = "旁物材质";
+        card.appendChild(ml);
+        card.appendChild(chipGroup("decorMat:" + item.id, DECOR_MATERIALS, function (id) { return cfg.mat.has(id); }));
+        var mr = document.createElement("div");
+        mr.className = "ipb-custom";
+        mr.innerHTML = '<input class="ipb-ctrl" data-decor-mat-input="' + item.id + '" placeholder="＋新增旁物材质英文…"><button type="button" class="ipb-btn" data-add-decor-mat="' + item.id + '">＋ 新增</button>';
+        card.appendChild(mr);
+        if (cfg.matExtra.length) {
+          cfg.matExtra.forEach(function (txt) {
+            var p2 = document.createElement("div");
+            p2.className = "ipb-res-en";
+            p2.textContent = txt;
+            card.appendChild(p2);
+          });
+        }
+
+        var sl = document.createElement("div");
+        sl.className = "ipb-edit-cap";
+        sl.textContent = "旁物表面 / 边缘";
+        card.appendChild(sl);
+        card.appendChild(chipGroup("decorSurf:" + item.id, DECOR_SURFACES, function (id) { return cfg.surf.has(id); }));
+        var sr = document.createElement("div");
+        sr.className = "ipb-custom";
+        sr.innerHTML = '<input class="ipb-ctrl" data-decor-surf-input="' + item.id + '" placeholder="＋新增旁物表面英文…"><button type="button" class="ipb-btn" data-add-decor-surf="' + item.id + '">＋ 新增</button>';
+        card.appendChild(sr);
+        if (cfg.surfExtra.length) {
+          cfg.surfExtra.forEach(function (txt) {
+            var p3 = document.createElement("div");
+            p3.className = "ipb-res-en";
+            p3.textContent = txt;
+            card.appendChild(p3);
+          });
+        }
+
+        var tl = document.createElement("div");
+        tl.className = "ipb-thick";
+        tl.innerHTML =
+          '<span class="ipb-edit-cap">旁物厚度</span>' +
+          '<label><input type="radio" name="decor-thick-' + item.id + '" value="thick"' + (cfg.thickness === "thick" ? " checked" : "") + '> 厚实 Thick / chunky</label>' +
+          '<label><input type="radio" name="decor-thick-' + item.id + '" value="normal"' + (cfg.thickness === "normal" ? " checked" : "") + '> 正常 Moderate</label>' +
+          '<label><input type="radio" name="decor-thick-' + item.id + '" value="thin"' + (cfg.thickness === "thin" ? " checked" : "") + '> 极薄 Ultra-thin</label>' +
+          '<input class="ipb-thick-custom" data-decor-thick-custom="' + item.id + '" type="text" placeholder="自定义厚度（可选）" value="' + String(cfg.thickCustom || "").replace(/"/g, "&quot;") + '">';
+        card.appendChild(tl);
+        dsec.appendChild(card);
+      });
+      host.appendChild(dsec);
+    }
+
     updateRecipeDesc();
     renderEditAreas();
     renderCustomAll();
@@ -691,7 +822,7 @@
     if (!arr.length) return;
     var cap = document.createElement("span");
     cap.className = "ipb-edit-cap";
-    cap.textContent = modKey === "recipe" ? "自定义风格补充（可直接修改）" : "自定义新增项（可直接修改）";
+    cap.textContent = modKey === "recipe" ? "自定义风格补充（可直接修改）" : "自定义新增项（中英可改，自动互译）";
     list.appendChild(cap);
     arr.forEach(function (item, i) {
       var row = document.createElement("div");
@@ -700,11 +831,19 @@
       lab.className = "ipb-edit-label";
       if (item.zh) { lab.textContent = item.zh; lab.title = "识别说明（中文）"; }
       else { lab.textContent = "#" + (i + 1); }
-      var inp = document.createElement("input");
-      inp.className = "ipb-edit";
-      inp.dataset.extra = modKey;
-      inp.dataset.i = String(i);
-      inp.value = item.text;
+      var bil = document.createElement("div");
+      bil.className = "ipb-bil";
+      var zhIn = document.createElement("input");
+      zhIn.className = "ipb-edit";
+      zhIn.dataset.extra = modKey; zhIn.dataset.i = String(i); zhIn.dataset.lang = "zh";
+      zhIn.placeholder = "中文说明（可改，自动译英文）";
+      zhIn.value = item.zh || "";
+      var enIn = document.createElement("input");
+      enIn.className = "ipb-edit";
+      enIn.dataset.extra = modKey; enIn.dataset.i = String(i); enIn.dataset.lang = "en";
+      enIn.placeholder = "English（写入提示词）";
+      enIn.value = item.text || "";
+      bil.appendChild(zhIn); bil.appendChild(enIn);
       var rm = document.createElement("button");
       rm.type = "button";
       rm.className = "ipb-rm";
@@ -712,7 +851,7 @@
       rm.dataset.i = String(i);
       rm.setAttribute("aria-label", "删除该自定义项");
       rm.textContent = "✕";
-      row.appendChild(lab); row.appendChild(inp); row.appendChild(rm);
+      row.appendChild(lab); row.appendChild(bil); row.appendChild(rm);
       list.appendChild(row);
     });
   }
@@ -729,14 +868,12 @@
   function addExtra(modKey, text) {
     var arr = extras[modKey] || [];
     arr.push({ id: "e" + (uid++), text: text });
-    renderCustom(modKey);
-    updateCounts(); compose();
+    if (modKey === "decor") { render(); } else { renderCustom(modKey); updateCounts(); compose(); }
   }
   function removeExtra(modKey, i) {
     var arr = extras[modKey] || [];
     if (i >= 0 && i < arr.length) arr.splice(i, 1);
-    renderCustom(modKey);
-    updateCounts(); compose();
+    if (modKey === "decor") { render(); } else { renderCustom(modKey); updateCounts(); compose(); }
   }
 
   function updateCounts() {
@@ -788,9 +925,13 @@
 
     var matChips = selectedChips("material");
     var matText = matChips.length ? " made of " + joinList(matChips.map(function (c) { return textFor("material", c); })) : "";
-    var thickPhrase = thickness === "thin" ? "an ultra-thin, wafer-like" : (thickness === "normal" ? "a moderately thick" : "a thick, chunky");
+    var thickPhrase = thicknessCustom.trim() ? (thicknessCustom.trim().replace(/[.,;]\s*$/, "") + ", ") : (thickness === "thin" ? "an ultra-thin, wafer-like" : (thickness === "normal" ? "a moderately thick" : "a thick, chunky"));
     lines.push(capFirst(thickPhrase + " " + (shape ? shape + " " : "") + noun + " icon" + matText + "."));
     pushCustom("material");
+
+    var trims = selectedChips("trim").filter(function (c) { return textFor("trim", c); });
+    if (trims.length) lines.push(capFirst(joinList(trims.map(function (c) { return textFor("trim", c); }))) + ".");
+    pushCustom("trim");
 
     var detChips = selectedChips("detail").filter(function (c) { return textFor("detail", c); });
     if (detChips.length) {
@@ -799,6 +940,38 @@
       lines.push("On the " + noun + " body, there " + verb + " " + joinList(detTexts) + ".");
     }
     pushCustom("detail");
+
+    var decorTexts = [];
+    selectedChips("decor").forEach(function (c) { decorTexts.push({ id: c.id, text: textFor("decor", c) }); });
+    (extras["decor"] || []).forEach(function (it) {
+      var t = String(it.text || "").trim();
+      if (t) decorTexts.push({ id: it.id, text: t });
+    });
+    decorTexts.forEach(function (d) {
+      var cfg = decorCfg[d.id] || {};
+      var mats = [];
+      (cfg.mat ? Array.from(cfg.mat) : []).forEach(function (id) {
+        var m = DECOR_MATERIALS.filter(function (x) { return x.id === id; })[0];
+        if (m) mats.push(m.en);
+      });
+      (cfg.matExtra || []).forEach(function (t) { if (t) mats.push(t); });
+      var surfs = [];
+      (cfg.surf ? Array.from(cfg.surf) : []).forEach(function (id) {
+        var m2 = DECOR_SURFACES.filter(function (x) { return x.id === id; })[0];
+        if (m2) surfs.push(m2.en);
+      });
+      (cfg.surfExtra || []).forEach(function (t) { if (t) surfs.push(t); });
+      var bits = [];
+      if (mats.length) bits.push("made of " + joinList(mats));
+      if (surfs.length) bits.push("with " + joinList(surfs));
+      var dThick = cfg.thickCustom ? cfg.thickCustom : (cfg.thickness === "thin" ? "thin and flat, like cut-out shapes" : (cfg.thickness === "thick" ? "chunky and noticeably thick" : ""));
+      if (dThick) bits.push(dThick);
+      var plural = /sparkles|dots|coins|bubbles|arrows|rings|lines|particles|stars/i.test(d.text);
+      lines.push("Surrounding the " + noun + ", there " + (plural ? "are " : "is ") + d.text + (bits.length ? ", " + bits.join(", ") : "") + ".");
+    });
+    var spreads = selectedChips("spread").filter(function (c) { return textFor("spread", c); });
+    if (spreads.length) lines.push("The surrounding elements are " + joinList(spreads.map(function (c) { return textFor("spread", c); })) + ".");
+    pushCustom("decor");
 
     var semChips = selectedChips("semantic").filter(function (c) { return c.mark; });
     semChips.forEach(function (sc) {
@@ -812,23 +985,6 @@
       lines.push(prefix + "there is a " + badgeShape + " badge " + matRef + ", containing " + sc.mark + " in " + sc.color + ".");
     });
     pushCustom("semantic");
-
-    var decors = selectedChips("decor").filter(function (c) { return textFor("decor", c); });
-    if (decors.length) {
-      lines.push("Surrounding the " + noun + ", there are " + joinList(decors.map(function (c) { return textFor("decor", c); })) + ".");
-      var dThick = decorThickness === "thin" ? "thin and flat, like cut-out shapes" :
-        (decorThickness === "thick" ? "chunky and noticeably thick" : "slightly dimensional with a subtle 3D feel");
-      lines.push("The surrounding decorations are " + dThick + ".");
-    }
-    pushCustom("decor");
-
-    var trims = selectedChips("trim").filter(function (c) { return textFor("trim", c); });
-    if (trims.length) lines.push(capFirst(joinList(trims.map(function (c) { return textFor("trim", c); }))) + ".");
-    pushCustom("trim");
-
-    var geos = selectedChips("geometry").filter(function (c) { return textFor("geometry", c); });
-    if (geos.length) lines.push(capFirst(joinComma(geos.map(function (c) { return textFor("geometry", c); }))) + ".");
-    pushCustom("geometry");
 
     var poses = selectedChips("pose").filter(function (c) { return textFor("pose", c); });
     if (poses.length) lines.push(capFirst(joinComma(poses.map(function (c) { return textFor("pose", c); }))) + ".");
@@ -924,9 +1080,12 @@
   root.addEventListener("change", function (e) {
     var t = e.target;
     if (t.name === "ipb-thick") {
-      thickness = t.value; compose();
-    } else if (t.name === "ipb-decor-thick") {
-      decorThickness = t.value; compose();
+      thickness = t.value; thicknessCustom = ""; compose();
+      if ($id("ipb-thick-custom")) $id("ipb-thick-custom").value = "";
+    } else if (t.name && t.name.indexOf("decor-thick-") === 0) {
+      var ti0 = t.name.slice(12);
+      var tc0 = decorCfg[ti0] || (decorCfg[ti0] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+      tc0.thickness = t.value; tc0.thickCustom = ""; compose();
     } else if (t.id === "ipb-badge-pos") {
       badgePos = t.value; compose();
     } else if (t.id === "ipb-badge-shape") {
@@ -940,6 +1099,21 @@
       }
     } else if (t.classList && t.classList.contains("ipb-in")) {
       var modKey = t.dataset.mod, id = t.dataset.id;
+      if (modKey && modKey.indexOf("decorMat:") === 0) {
+        var mi = modKey.slice(9), mc = decorCfg[mi] || (decorCfg[mi] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        if (t.checked) mc.mat.add(id); else mc.mat.delete(id);
+        compose(); return;
+      }
+      if (modKey && modKey.indexOf("decorSurf:") === 0) {
+        var si = modKey.slice(10), sc = decorCfg[si] || (decorCfg[si] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        if (t.checked) sc.surf.add(id); else sc.surf.delete(id);
+        compose(); return;
+      }
+      if (t.name && t.name.indexOf("decor-thick-") === 0) {
+        var ti = t.name.slice(12);
+        var tc = decorCfg[ti] || (decorCfg[ti] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        tc.thickness = t.value; tc.thickCustom = ""; compose(); return;
+      }
       if (modKey === "recipe") {
         if (t.checked) { recipeSel.add(id); unionRecipe(id, true); }
         else { recipeSel.delete(id); unionRecipe(id, false); }
@@ -965,11 +1139,19 @@
           delete overrides[modKey][id];
         }
         renderEditArea(modKey);
-        updateCounts(); compose();
+        if (modKey === "decor") { render(); } else { updateCounts(); compose(); }
       }
     }
   });  root.addEventListener("input", function (e) {
     var t = e.target;
+    if (t.id === "ipb-thick-custom") {
+      thicknessCustom = t.value; compose(); return;
+    }
+    if (t.dataset && t.dataset.decorThickCustom) {
+      var di = t.dataset.decorThickCustom;
+      var dc = decorCfg[di] || (decorCfg[di] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+      dc.thickCustom = t.value; compose(); return;
+    }
     if (t.classList && t.classList.contains("ipb-edit")) {
       var mod = t.dataset.mod, chip = t.dataset.chip, ei = t.dataset.i, extra = t.dataset.extra;
       if (chip) {
@@ -982,11 +1164,51 @@
       } else if (extra !== undefined) {
         var arr = extras[extra] || [];
         var idx = Number(ei);
-        if (arr[idx]) arr[idx].text = t.value;
+        var lang = t.dataset.lang || "en";
+        if (arr[idx]) {
+          if (lang === "zh") arr[idx].zh = t.value; else arr[idx].text = t.value;
+        }
+        if (window.__ipbTranslate) {
+          clearTimeout(t._trTimer);
+          t._trTimer = setTimeout(function () {
+            var src = String(t.value || "").trim();
+            if (!src) return;
+            var to = lang === "zh" ? "en" : "zh";
+            window.__ipbTranslate(src, to, function (err, out) {
+              if (err || !out) return;
+              var item = (extras[extra] || [])[idx];
+              if (!item) return;
+              if (to === "en") item.text = out; else item.zh = out;
+              renderCustom(extra); compose();
+            });
+          }, 700);
+        }
       }
       compose();
     }
   });  root.addEventListener("click", function (e) {
+    var dmat = e.target.closest ? e.target.closest("[data-add-decor-mat]") : null;
+    if (dmat) {
+      var mi2 = dmat.dataset.addDecorMat;
+      var inp2 = stepsEl().querySelector('input[data-decor-mat-input="' + mi2 + '"]');
+      var v2 = inp2 ? inp2.value.trim() : "";
+      if (v2) {
+        var c2 = decorCfg[mi2] || (decorCfg[mi2] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        c2.matExtra.push(v2); inp2.value = ""; render(); compose();
+      }
+      return;
+    }
+    var dsurf = e.target.closest ? e.target.closest("[data-add-decor-surf]") : null;
+    if (dsurf) {
+      var si2 = dsurf.dataset.addDecorSurf;
+      var inp3 = stepsEl().querySelector('input[data-decor-surf-input="' + si2 + '"]');
+      var v3 = inp3 ? inp3.value.trim() : "";
+      if (v3) {
+        var c3 = decorCfg[si2] || (decorCfg[si2] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        c3.surfExtra.push(v3); inp3.value = ""; render(); compose();
+      }
+      return;
+    }
     var addBtn = e.target.closest ? e.target.closest("[data-add-custom]") : null;
     if (addBtn) {
       var modKey = addBtn.dataset.addCustom;
@@ -1255,9 +1477,18 @@
         recipeSel = new Set();
         extras["recipe"] = [];
       }
+      aiFlag = {};
       merged.forEach(function (r) {
+        if (r.modKey === "geometry") {
+          var txt = ((r.zh || "") + " " + (r.en || "")).toLowerCase();
+          if (/ultra-thin|wafer|paper-thin|极薄|超薄/.test(txt)) thickness = "thin";
+          else if (/thick|chunky|extruded|厚实|厚/.test(txt)) thickness = "thick";
+          else if (txt.trim()) thickness = "normal";
+          return;
+        }
         (r.chips || []).forEach(function (id) { if (sel[r.modKey]) sel[r.modKey].add(id); });
         applyRowExtra(r);
+        aiFlag[r.modKey] = true;
       });
       render();
       compose();
@@ -1719,71 +1950,7 @@
     }
 
     // ----- render rows bilingual -----
-    function renderRows(rows) {
-      resEl.innerHTML = "";
-      inputRefs = [];
-      rows.forEach(function (r, idx) {
-        var meta = META[r.modKey] || {};
-        var row = document.createElement("div");
-        row.className = "ipb-res-row";
-        var head = document.createElement("div");
-        head.className = "ipb-res-head";
-        var t = document.createElement("span");
-        t.className = "ipb-res-t";
-        t.textContent = (meta.num || "") + " " + (meta.title || r.modKey);
-        var note = document.createElement("span");
-        note.className = "ipb-res-note";
-        note.textContent = r.auto ? (r.ai ? "AI 识别" : "已自动匹配") : "需人工判断";
-        head.appendChild(t); head.appendChild(note);
-        row.appendChild(head);
-
-        var bil = document.createElement("div");
-        bil.className = "ipb-res-bil";
-        function line(label, val, lang) {
-          var l = document.createElement("div");
-          l.className = "ipb-res-line";
-          var cap = document.createElement("span");
-          cap.textContent = label;
-          var inp = document.createElement("input");
-          inp.type = "text";
-          inp.className = "ipb-res-in";
-          inp.value = val || "";
-          inp.dataset.lang = lang;
-          inp.addEventListener("input", function () {
-            r[lang] = inp.value;
-            if (lang === "en") aiLive(r);
-            scheduleTranslate(idx, lang);
-          });
-          l.appendChild(cap); l.appendChild(inp);
-          return { l: l, inp: inp };
-        }
-        var zhL = line("中文", r.zh, "zh");
-        var enL = line("English", r.en, "en");
-        bil.appendChild(zhL.l); bil.appendChild(enL.l);
-        row.appendChild(bil);
-        inputRefs[idx] = { zh: zhL.inp, en: enL.inp };
-
-        if (r.ai) {
-          var incLab = document.createElement("label");
-          incLab.className = "ipb-res-inc";
-          var inc = document.createElement("input");
-          inc.type = "checkbox";
-          inc.checked = !!r.include;
-          inc.addEventListener("change", function () {
-            r.include = inc.checked;
-            applyRowExtra(r);
-            renderCustom(r.modKey);
-            updateCounts(); compose(); mirrorPrompt();
-          });
-          incLab.appendChild(inc);
-          incLab.appendChild(document.createTextNode(" 勾选 = 把此条英文作为该模块的补充句加入提示词（可继续改中/英）"));
-          row.appendChild(incLab);
-        }
-        resEl.appendChild(row);
-      });
-      resActions.hidden = false;
-    }
-
+    function renderRows(rows) { resEl.innerHTML = ""; if (resActions) resActions.hidden = true; }
     function runAnalysis(dataUrl) {
       setPreview(dataUrl);
       lastDataUrl = dataUrl;
@@ -1837,6 +2004,7 @@
     });
     var _origCompose = compose;
     compose = function () { _origCompose(); mirrorPrompt(); };
+    window.__ipbTranslate = translateText;
     window.__ipbAnalyze = {
       analyze: runAnalysis,
       rows: function () { return lastRows; },
