@@ -181,10 +181,7 @@
     <p class="ipb-ai-note" id="ipb-ai-note" hidden></p>
     <div class="ipb-regionbar" id="ipb-regionbar" hidden></div>
     <div class="ipb-res" id="ipb-res"></div>
-    <div class="ipb-ai-promptbox" id="ipb-ai-promptbox" hidden>
-      <span class="ipb-edit-cap">已同步的提示词初稿（先确认 ①主体与④状态是你想要的，再复制）</span>
-      <textarea class="ipb-prompt" id="ipb-ai-prompt" readonly spellcheck="false" aria-label="识别同步的提示词初稿"></textarea>
-    </div>
+
     <div class="ipb-res-actions" id="ipb-res-actions" hidden>
       <button type="button" class="ipb-btn" id="ipb-ai-run">✨ AI 精析（视觉模型）</button>
       <button type="button" class="ipb-btn" id="ipb-res-copy">复制双语分析结果</button>
@@ -1537,7 +1534,8 @@
       updateRecipeDesc();
       var okN = merged.filter(function (r) { return r.auto; }).length;
       countEl.textContent = "✨ AI 精析：" + okN + "/" + merged.length + " 项可应用（其余已保留本地/请手动）";
-      $id("ipb-ai-promptbox").hidden = false;
+      var pbox = $id("ipb-ai-promptbox");
+      if (pbox) pbox.hidden = false;
       mirrorPrompt();
       return merged;
     }
@@ -1996,7 +1994,8 @@
           ? "需人工判断（" + manualKeys.join("、") + "）：主体 / 内容 / 状态需要“看懂图”，像素无法识别。请在下方把 ①主体 改成图片中的物体（或＋新增），勾选 ③④ 后，右侧 / 下方提示词才会与你的图对应；也可把图片放进 references 让 Codex 精析。"
           : "";
       }
-      $id("ipb-ai-promptbox").hidden = false;
+      var pbox2 = $id("ipb-ai-promptbox");
+      if (pbox2) pbox2.hidden = false;
       mirrorPrompt();
     }
 
