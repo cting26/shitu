@@ -132,6 +132,11 @@
   #ipb .ipb-editrow .ipb-bil { display: grid; gap: 3px; min-width: 0; }
   #ipb .ipb-editrow .ipb-bil input { width: 100%; }
 
+  #ipb .ipb-runrow { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  #ipb .ipb-progwrap { height: 8px; border-radius: 999px; background: rgba(255,255,255,.08); margin-top: 9px; overflow: hidden; }
+  #ipb .ipb-progbar { height: 100%; width: 0%; background: linear-gradient(90deg, #f2c45c, #dfa439); transition: width .3s ease; }
+  #ipb .ipb-progtext { margin: 5px 0 0; font-size: 11.5px; color: var(--muted); }
+
   @media (min-width: 881px) { #ipb .ipb-out { position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; } }
   @media (max-width: 560px) { #ipb .ipb-editrow { grid-template-columns: minmax(0, 1fr); } }
 </style>
@@ -155,8 +160,13 @@
       <div class="ipb-pvwrap" id="ipb-pvwrap" hidden><img id="ipb-pv" alt="参考图预览"></div>
     </div>
     <label class="ipb-ai-opt"><input type="checkbox" id="ipb-replace" checked> 应用时用识别结果替换当前选项（✨ AI 精析会连 ①主体 / ③内容 / ④语义 一起替换；关闭 = 叠加并保留手动选择）</label>
-    <label class="ipb-ai-opt"><input type="checkbox" id="ipb-auto-ai" checked> 载入后自动运行 ✨ AI 精析（需先双击「启动3D图标AI服务.command」，或直接用 <b>http://127.0.0.1:8790</b> 打开本页）</label>
-    <p class="ipb-ai-state" id="ipb-ai-state">AI 服务：检测中…</p>
+    <label class="ipb-ai-opt"><input type="checkbox" id="ipb-auto-ai"> 上传后自动开始识别（默认关闭：上传后请手动点「开始识别」）</label>
+    <div class="ipb-runrow">
+      <button type="button" class="ipb-btn ipb-btn-primary" id="ipb-ai-start" hidden>🔍 开始识别</button>
+      <span class="ipb-ai-state" id="ipb-ai-state">AI 服务：检测中…</span>
+    </div>
+    <div class="ipb-progwrap" id="ipb-progwrap" hidden><div class="ipb-progbar" id="ipb-progbar"></div></div>
+    <p class="ipb-progtext" id="ipb-progtext"></p>
     <details class="ipb-ai-settings">
       <summary>⚙ AI 服务设置（部署到公网后在这里填服务地址与口令）</summary>
       <div class="ipb-ai-set-grid">
@@ -1323,6 +1333,14 @@
     var countEl = $id("ipb-ai-count"), replaceChk = $id("ipb-replace");
     var resActions = $id("ipb-res-actions");
     var stateEl = $id("ipb-ai-state"), autoAiChk = $id("ipb-auto-ai"), aiRunBtn = $id("ipb-ai-run");
+    var startBtn = $id("ipb-ai-start"), progWrap = $id("ipb-progwrap"), progBar = $id("ipb-progbar"), progText = $id("ipb-progtext");
+    function setProgress(pct, text, warn) {
+      if (progWrap) progWrap.hidden = false;
+      if (progBar) progBar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+      if (progText) { progText.textContent = text || ""; progText.style.color = warn ? "var(--warn)" : ""; }
+    }
+    function resetProgress() { if (progWrap) progWrap.hidden = true; if (progBar) progBar.style.width = "0%"; if (progText) progText.textContent = ""; }
+    function setRunning(on) { if (startBtn) { startBtn.disabled = !!on; startBtn.textContent = on ? "识别中…" : "🔍 开始识别"; } }
     var lastDataUrl = "";
     var ALL_TEN = ["object", "geometry", "detail", "semantic", "decor", "material", "trim", "light", "pose", "bg", "kw"];
     function aiBase() {
@@ -1621,26 +1639,34 @@
       cb(out);
     }
     function runAiFull(dataUrl) {
-      setAiState("🔍 切分主体并逐块高分辨率识别中…（1-8 个主体约 10-60 秒）", "");
+      setRunning(true);
+      setProgress(5, "正在检测主体…");
+      setAiState("🔍 正在识别…", "");
       downscale(dataUrl, 1400).then(function (work) {
         var img = new Image();
         img.onload = function () {
           try {
             detectRegionsCanvas(img, function (bboxes) {
               if (!bboxes || bboxes.length <= 1) {
+                setProgress(25, "正在高分辨率识别整图…");
                 aiAnalyze(dataUrl, 1400, function (err, sr) {
-                  if (err) { setAiState("AI 服务未连接：" + err, "warn"); return; }
+                  if (err) {
+                    setProgress(100, "AI 服务未连接，已用本地启发式兜底", true);
+                    if (lastLocalRows.length) applyRows(lastLocalRows);
+                    setAiState("AI 未连接，已回退本地启发式", "warn"); setRunning(false); return;
+                  }
                   regions = []; activeRegion = 0; renderRegionbar();
                   lastTitle = "AI 精析（视觉模型）";
                   lastRows = applyAi(serverToRows(sr));
-                  renderRows(lastRows);
-                  setAiState("✨ AI 精析完成（整图识别）", "ok");
+                  setProgress(100, "识别完成 ✅");
+                  setAiState("✨ 识别完成（整图识别）", "ok"); setRunning(false);
                 });
                 return;
               }
               var imFull = new Image();
               imFull.onload = function () {
                 var results = [], idx = 0;
+                setProgress(15, "检测到 " + bboxes.length + " 个主体，开始逐个识别…");
                 function next() {
                   if (idx >= bboxes.length) {
                     regions = results.map(function (r) {
@@ -1651,11 +1677,12 @@
                     activeRegion = 0;
                     lastRows = regions[0].rows;
                     renderRegionbar();
-                    renderRows(lastRows);
                     applyAi(lastRows);
-                    setAiState("✨ 完成：切分 " + regions.length + " 个主体，已逐个高分辨率识别", "ok");
+                    setProgress(100, "识别完成 ✅（" + regions.length + " 个主体）");
+                    setAiState("✨ 完成：切分 " + regions.length + " 个主体，已写入各模块", "ok"); setRunning(false);
                     return;
                   }
+                  setProgress(15 + Math.round(80 * idx / bboxes.length), "正在识别主体 " + (idx + 1) + "/" + bboxes.length + "…");
                   var b = bboxes[idx];
                   var sw = b.x1 - b.x0, sh = b.y1 - b.y0;
                   var sc = Math.min(1, 1500 / Math.max(sw, sh));
@@ -1682,11 +1709,9 @@
       });
     }
     function maybeAutoAi(dataUrl) {
-      if (autoAiChk && autoAiChk.checked) {
-        runAiFull(dataUrl);
-      } else {
-        setAiState("已跳过 AI（可点「✨ AI 精析」手动运行）", "");
-      }
+      if (startBtn) startBtn.hidden = false;
+      if (autoAiChk && autoAiChk.checked) { runAiFull(dataUrl); }
+      else { setProgress(0, "图片已就绪，点击「开始识别」开始分析"); setAiState("图片已上传 · 点击「🔍 开始识别」开始（AI 精析）", "ok"); }
     }
 
 
@@ -1704,6 +1729,8 @@
       rd.readAsDataURL(file);
     }
     function setPreview(dataUrl) {
+      resetProgress();
+      if (startBtn) { startBtn.hidden = false; startBtn.disabled = false; startBtn.textContent = "🔍 开始识别"; }
       pv.src = dataUrl;
       pvWrap.hidden = false;
       idle.hidden = true;
@@ -1984,10 +2011,10 @@
           var st = analyzeCanvas(img);
           lastLocalRows = deriveRows(st);
           lastRows = lastLocalRows.slice();
-          lastTitle = "参考图 10 项分析（本地启发式）";
-          renderRows(lastRows);
-          applyRows(lastRows);
-          maybeAutoAi(dataUrl);
+          setProgress(0, "图片已就绪，点击「开始识别」开始分析");
+          if (startBtn) startBtn.hidden = false;
+          if (autoAiChk && autoAiChk.checked) { runAiFull(dataUrl); }
+          else { setAiState("图片已上传 · 点击「🔍 开始识别」开始（AI 精析）", "ok"); }
         } catch (err) {
           statusEl().textContent = "分析失败：" + err.message;
           statusEl().className = "ipb-status warn";
@@ -2016,6 +2043,10 @@
     }
 
     $id("ipb-res-copy").addEventListener("click", copyResults);
+    if (startBtn) startBtn.addEventListener("click", function () {
+      if (!lastDataUrl) { setAiState("请先上传 / 拖拽 / 粘贴一张图片", "warn"); return; }
+      runAiFull(lastDataUrl);
+    });
     if (aiRunBtn) aiRunBtn.addEventListener("click", function () {
       if (!lastDataUrl) { setAiState("请先上传 / 拖拽 / 粘贴一张图片", "warn"); return; }
       runAiFull(lastDataUrl);
