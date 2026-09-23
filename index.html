@@ -137,7 +137,7 @@
   #ipb .ipb-progbar { height: 100%; width: 0%; background: linear-gradient(90deg, #f2c45c, #dfa439); transition: width .3s ease; }
   #ipb .ipb-progtext { margin: 5px 0 0; font-size: 11.5px; color: var(--muted); }
 
-  @media (min-width: 881px) { #ipb .ipb-out { position: sticky; top: 14px; margin-top: 54px; max-height: calc(100vh - 28px); overflow-y: auto; } }
+  @media (min-width: 881px) { #ipb .ipb-out { position: sticky; top: 14px; margin-top: 0; max-height: calc(100vh - 28px); overflow-y: auto; } }
 
   /* ===== v2.1 视觉风格：参考 The Quiz（冷黑 + 暖米色 + 低对比卡片） ===== */
   #ipb { --bg: #07080B; --card: #141216; --card2: #1B181C; --fg: #F2F0EE; --muted: #9A9591;
@@ -177,6 +177,20 @@
   #ipb .ipb-progbar { background: linear-gradient(90deg, #D9B58D, #B98A5F); }
   #ipb .ipb-ai-badge { background: rgba(201,162,122,.16); color: #D3B08A; }
 
+
+  #ipb .ipb-leftcol { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  #ipb section.ipb-analyze { padding: 12px 14px 14px; border-radius: 16px; }
+  #ipb .ipb-analyze .ipb-step-head h3 { font-size: 13.5px; }
+  #ipb .ipb-analyze .ipb-hint { margin: 4px 0 8px; font-size: 11px; line-height: 1.45; }
+  #ipb .ipb-analyze .ipb-drop { padding: 14px 12px; min-height: 74px; border-radius: 13px; gap: 6px; }
+  #ipb .ipb-analyze .ipb-drop-idle { font-size: 12px; line-height: 1.5; }
+  #ipb .ipb-analyze .ipb-ai-opt { margin-top: 7px; font-size: 10.8px; line-height: 1.45; }
+  #ipb .ipb-analyze .ipb-runrow { margin-top: 8px; }
+  #ipb .ipb-analyze .ipb-btn { min-height: 28px; padding: 0 11px; font-size: 12px; }
+  #ipb .ipb-analyze .ipb-ai-state { font-size: 10.5px; }
+  #ipb .ipb-analyze .ipb-progwrap { margin-top: 7px; height: 6px; }
+  #ipb .ipb-analyze .ipb-progtext { font-size: 10.5px; margin-top: 4px; }
+
   @media (max-width: 560px) { #ipb .ipb-editrow { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
@@ -186,13 +200,16 @@
   </div>
 
 
+
+  <div class="ipb-layout">
+    <div class="ipb-leftcol">
   <section class="ipb-step ipb-analyze" aria-labelledby="ipb-h-analyze">
     <div class="ipb-step-head">
       <span class="ipb-num">📷</span>
       <h3 id="ipb-h-analyze">上传参考图 · 按 ①-⑩ 自动分析</h3>
       <span class="ipb-count" id="ipb-ai-count"></span>
     </div>
-    <p class="ipb-hint">拖拽图片到下方虚线框、点击本地选择，或直接 ⌘/Ctrl+V 粘贴；载入后立即按 10 项结构解析并自动勾选 / 填充（结果中英双语显示）。主体与业务语义需“看懂图”，页面为像素级预判，把图片发给 Codex 可获得精析。</p>
+    <p class="ipb-hint">拖拽 / 点击 / 粘贴图片 → 点「开始识别」，结果直接写入下方各模块。</p>
     <div class="ipb-drop" id="ipb-drop" role="button" tabindex="0" aria-label="上传参考图片">
       <input type="file" id="ipb-file" accept="image/*" hidden>
       <div class="ipb-drop-idle" id="ipb-drop-idle">＋ 点击选择图片<br>或拖拽 / 粘贴（PNG / JPG）</div>
@@ -227,9 +244,8 @@
       <button type="button" class="ipb-btn" id="ipb-res-apply">重新应用到底部模块</button>
     </div>
   </section>
-
-  <div class="ipb-layout">
-    <div class="ipb-steps" id="ipb-steps" aria-label="参数条件"></div>
+      <div class="ipb-steps" id="ipb-steps" aria-label="参数条件"></div>
+    </div>
 
     <aside class="ipb-out" aria-label="生成的提示词">
       <div class="ipb-out-head">
