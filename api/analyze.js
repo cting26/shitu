@@ -29,14 +29,16 @@ const VOCAB = [
 ];
 
 const SYSTEM = `你是 3D 图标提示词解析器。用户发来一张 3D 图标参考图，请按 10 个维度分析并只输出一个 JSON 对象（不要 markdown、不要多余文字、不要注释）：
-{"object":{"zh":"","en":"","chips":[],"custom":null},"geometry":{"zh":"","en":"","chips":[],"custom":null},"detail":{"zh":"","en":"","chips":[],"custom":null},"semantic":{"zh":"","en":"","chips":[],"custom":null},"decor":{"zh":"","en":"","chips":[],"custom":null},"material":{"zh":"","en":"","chips":[],"custom":null},"trim":{"zh":"","en":"","chips":[],"custom":null},"light":{"zh":"","en":"","chips":[],"custom":null},"pose":{"zh":"","en":"","chips":[],"custom":null},"bg":{"zh":"","en":"","chips":[],"custom":null},"kw":{"zh":"","en":"","chips":[],"custom":null}}
+{"object":{"zh":"","en":"","chips":[],"custom":null},"geometry":{"zh":"","en":"","chips":[],"custom":null},"detail":{"zh":"","en":"","chips":[],"custom":null},"semantic":{"zh":"","en":"","chips":[],"custom":null},"decor":{"zh":"","en":"","chips":[],"custom":null,"items":[{"id":"sparkles","material":{"chips":["dgold"],"custom":null},"surface":{"chips":["spolish"],"custom":null},"thickness_level":"thin","thickness_custom":""}]},"material":{"zh":"","en":"","chips":[],"custom":null},"trim":{"zh":"","en":"","chips":[],"custom":null},"light":{"zh":"","en":"","chips":[],"custom":null},"pose":{"zh":"","en":"","chips":[],"custom":null},"bg":{"zh":"","en":"","chips":[],"custom":null},"kw":{"zh":"","en":"","chips":[],"custom":null}}
 
 严格规则：
 1. 所有 10 个 key 必须齐全，每个的 zh 与 en 都不能为空字符串；chips 必须是数组（可为空，不能是 null/缺省）。
 2. chips 只能从下方候选词表里选 id，优先选最贴切的，宁少勿乱。
 3. object.en 是"无冠词、单数可数名词"（如 bank card / vault safe）。候选里有就放 chips；没有则 chips 留空，custom.en 给该名词、custom.zh 给中文。
 4. semantic 只有画面里真的有角标才选：✕=rejected ✓绿勾=approved ⏱时钟=pending !（圆环/三角）=warning 或 error 锁=locked 盾+勾=verified 归档盒=archived。没有角标就 chips:[] 且 custom:null，不要臆测"通过/同意"。
-5. decor(主体周边装饰)：sparkles星光闪点 orbit轨道环 dots粒子点 coins悬浮金币 glow光晕 arrows流向箭头 minibadge小徽章 bubbles气泡 gridlines网格线 ripple环形波纹；同时在 zh/en 里说明装饰厚度（chunky and noticeably thick / slightly dimensional / thin and flat）；没有装饰就 chips:[] 且 custom:null。
+5. decor(旁物)：chips 从这些 id 选：sparkles,orbit,dots,coins,glow,arrows,minibadge,bubbles,gridlines,ripple；并且必须为每个选中的旁物在 items 数组里给出一条：
+   {"id":"<上面的id>","material":{"chips":[dglass,dmetal,dgold,dglow,dplastic,dceramic,dneon,dfrost],"custom":null或{zh,en}},"surface":{"chips":[spolish,smatte,sglowedge,schrome,sgoldedge,sblackedge,sclear,sfrostsurf],"custom":null或{zh,en}},"thickness_level":"thick|normal|thin","thickness_custom":""}
+   material 是旁物材质（dglass玻璃 dmetal金属 dgold金色 dglow发光 dplastic塑料 dceramic陶瓷 dneon霓虹 dfrost磨砂）；surface 是旁物表面/边缘（spolish抛光 smatte哑光 sglowedge发光边 schrome铬边 sgoldedge金边 sblackedge黑边 sclear清漆 sfrostsurf磨砂面）；thickness_level 只能三选一；没有旁物时 chips:[]、items:[]、custom:null。
 6. detail 是主体表面的内容图案：三条横线=pills 芯片方块=chip 磁条线=stripe 波形=wave 迷你K线柱=bars 盾纹=shieldmark 钥匙孔=keyhole 顶部露出卡片=peekcard 折角=fold 长槽=slot 圆形挖孔=cutout。
 6. object 常见映射：卡片=card 文档/文件=document 钱包=wallet 锁=lock 盾=shield 齿轮=gear 票据=receipt 手机=phone K线面板=kline 计算器=calculator 硬币=coin 文件夹=folder 信封=envelope 云=cloud 铃=bell 地球/球=globe 靶心=target 保险箱=safe。
 7. geometry：大圆角厚实块=block 圆润充气=soft 极简薄=thin 超椭圆=squircle 多面切割=faceted 圆角厚板=slab 双层=layer 挖孔负空间=cutouts。
@@ -72,7 +74,32 @@ function cleanRows(rows) {
     if (!chips.length && !cust && en && !/(unclear|manually|无法|不确定)/i.test(en + zh)) {
       cust = { zh, en };
     }
-    out[k] = { zh, en, chips, custom: cust };
+    const row = { zh, en, chips, custom: cust };
+    if (k === 'decor') {
+      const items = [];
+      const LIST = Array.isArray(v.items) ? v.items : [];
+      for (const it of LIST) {
+        if (!it || typeof it !== 'object') continue;
+        const iid = String(it.id || '').trim();
+        if (!['sparkles','orbit','dots','coins','glow','arrows','minibadge','bubbles','gridlines','ripple'].includes(iid)) continue;
+        const pick = (block, allowed) => {
+          const b = block && typeof block === 'object' ? block : {};
+          const cs = Array.isArray(b.chips) ? b.chips.filter(c => allowed.includes(c)) : [];
+          const cu = b.custom && typeof b.custom === 'object' && b.custom.en ? b.custom : null;
+          return { chips: cs, custom: cu };
+        };
+        const lvl = String(it.thickness_level || '').toLowerCase();
+        items.push({
+          id: iid,
+          material: pick(it.material, ['dglass','dmetal','dgold','dglow','dplastic','dceramic','dneon','dfrost']),
+          surface: pick(it.surface, ['spolish','smatte','sglowedge','schrome','sgoldedge','sblackedge','sclear','sfrostsurf']),
+          thickness_level: ['thick','normal','thin'].includes(lvl) ? lvl : '',
+          thickness_custom: String(it.thickness_custom || '').trim()
+        });
+      }
+      row.items = items;
+    }
+    out[k] = row;
   }
   return out;
 }
