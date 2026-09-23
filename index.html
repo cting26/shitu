@@ -674,7 +674,14 @@
       var dcount = document.createElement("span");
       dcount.className = "ipb-count";
       dcount.textContent = decorItems.length + " 个旁物";
-      dhead.appendChild(dnum); dhead.appendChild(dh); dhead.appendChild(dcount);
+      dhead.appendChild(dnum); dhead.appendChild(dh);
+      if (aiFlag.decorCfg) {
+        var dab = document.createElement("span");
+        dab.className = "ipb-ai-badge";
+        dab.textContent = "AI";
+        dhead.appendChild(dab);
+      }
+      dhead.appendChild(dcount);
       var dhint = document.createElement("p");
       dhint.className = "ipb-hint";
       dhint.textContent = "每个旁物单独设置材质、表面与厚度；不设置则只输出旁物本身。";
@@ -1056,6 +1063,7 @@
     sel.object = new Set(["document"]);
     sel.detail = new Set(["pills"]);
     sel.semantic = new Set(["rejected"]);
+    decorCfg = {};
     extras["recipe"] = [];
     extras["object"] = [];
     unionRecipe("glass", true);
@@ -1067,6 +1075,7 @@
     sel.detail = new Set();
     sel.semantic = new Set();
     sel.decor = new Set();
+    decorCfg = {};
     MODULES.forEach(function (m) {
       if (m.key === "recipe") return;
       overrides[m.key] = {};
@@ -1392,7 +1401,8 @@
         var en0 = v.en || "";
         if (add.length && !String(en0).trim()) en0 = add[0].en;
         return { modKey: k, auto: true, ai: true, include: add.length > 0,
-                 chips: chips, add: add, zh: v.zh || "", en: String(en0).trim() };
+                 chips: chips, add: add, items: Array.isArray(v.items) ? v.items : [],
+                 zh: v.zh || "", en: String(en0).trim() };
       });
     }
     function applyRowExtra(r) {
@@ -1489,6 +1499,20 @@
         (r.chips || []).forEach(function (id) { if (sel[r.modKey]) sel[r.modKey].add(id); });
         applyRowExtra(r);
         aiFlag[r.modKey] = true;
+        if (r.modKey === "decor" && r.items && r.items.length) {
+          r.items.forEach(function (it) {
+            if (!it || !it.id) return;
+            var cfg = decorCfg[it.id] || (decorCfg[it.id] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+            cfg.mat = new Set((it.material && it.material.chips) || []);
+            cfg.surf = new Set((it.surface && it.surface.chips) || []);
+            cfg.matExtra = []; cfg.surfExtra = [];
+            if (it.material && it.material.custom && it.material.custom.en) cfg.matExtra.push(String(it.material.custom.en).trim());
+            if (it.surface && it.surface.custom && it.surface.custom.en) cfg.surfExtra.push(String(it.surface.custom.en).trim());
+            cfg.thickness = it.thickness_level || "";
+            cfg.thickCustom = it.thickness_custom || "";
+            aiFlag.decorCfg = true;
+          });
+        }
       });
       render();
       compose();
