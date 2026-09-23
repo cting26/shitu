@@ -36,7 +36,7 @@ const SYSTEM = `你是 3D 图标提示词解析器。用户发来一张 3D 图�
 2. chips 只能从下方候选词表里选 id，优先选最贴切的，宁少勿乱。
 3. object.en 是"无冠词、单数可数名词"（如 bank card / vault safe）。候选里有就放 chips；没有则 chips 留空，custom.en 给该名词、custom.zh 给中文。
 4. semantic 只有画面里真的有角标才选：✕=rejected ✓绿勾=approved ⏱时钟=pending !（圆环/三角）=warning 或 error 锁=locked 盾+勾=verified 归档盒=archived。没有角标就 chips:[] 且 custom:null，不要臆测"通过/同意"。
-5. decor(主体周边装饰)：sparkles星光闪点 orbit轨道环 dots粒子点 coins悬浮金币 glow光晕 arrows流向箭头 minibadge小徽章 bubbles气泡 gridlines网格线 ripple环形波纹；没有装饰就 chips:[] 且 custom:null。
+5. decor(主体周边装饰)：sparkles星光闪点 orbit轨道环 dots粒子点 coins悬浮金币 glow光晕 arrows流向箭头 minibadge小徽章 bubbles气泡 gridlines网格线 ripple环形波纹；同时在 zh/en 里说明装饰厚度（chunky and noticeably thick / slightly dimensional / thin and flat）；没有装饰就 chips:[] 且 custom:null。
 6. detail 是主体表面的内容图案：三条横线=pills 芯片方块=chip 磁条线=stripe 波形=wave 迷你K线柱=bars 盾纹=shieldmark 钥匙孔=keyhole 顶部露出卡片=peekcard 折角=fold 长槽=slot 圆形挖孔=cutout。
 6. object 常见映射：卡片=card 文档/文件=document 钱包=wallet 锁=lock 盾=shield 齿轮=gear 票据=receipt 手机=phone K线面板=kline 计算器=calculator 硬币=coin 文件夹=folder 信封=envelope 云=cloud 铃=bell 地球/球=globe 靶心=target 保险箱=safe。
 7. geometry：大圆角厚实块=block 圆润充气=soft 极简薄=thin 超椭圆=squircle 多面切割=faceted 圆角厚板=slab 双层=layer 挖孔负空间=cutouts。

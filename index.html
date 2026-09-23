@@ -407,6 +407,7 @@
 
   var recipeSel = new Set(["glass"]);
   var thickness = "thick";
+  var decorThickness = "normal";
   var badgePos = "bottom-right";
   var badgeShape = "circular";
   var sel = {}, overrides = {}, extras = {}, uid = 1;
@@ -567,14 +568,17 @@
       } else {
         section.appendChild(chipGroup(mod.key, mod.chips, function (id) { return sel[mod.key].has(id); }));
 
-        if (mod.key === "geometry") {
+        if (mod.key === "geometry" || mod.key === "decor") {
+          var isGeo = mod.key === "geometry";
+          var cur = isGeo ? thickness : decorThickness;
+          var gname = isGeo ? "ipb-thick" : "ipb-decor-thick";
           var th = document.createElement("div");
           th.className = "ipb-thick";
           th.innerHTML =
             '<span class="ipb-edit-cap">厚度 Thickness</span>' +
-            '<label><input type="radio" name="ipb-thick" value="thick"' + (thickness === "thick" ? " checked" : "") + '> 厚实 Thick / chunky</label>' +
-            '<label><input type="radio" name="ipb-thick" value="normal"' + (thickness === "normal" ? " checked" : "") + '> 正常 Moderate</label>' +
-            '<label><input type="radio" name="ipb-thick" value="thin"' + (thickness === "thin" ? " checked" : "") + '> 极薄 Ultra-thin</label>';
+            '<label><input type="radio" name="' + gname + '" value="thick"' + (cur === "thick" ? " checked" : "") + '> 厚实 Thick / chunky</label>' +
+            '<label><input type="radio" name="' + gname + '" value="normal"' + (cur === "normal" ? " checked" : "") + '> 正常 Moderate</label>' +
+            '<label><input type="radio" name="' + gname + '" value="thin"' + (cur === "thin" ? " checked" : "") + '> 极薄 Ultra-thin</label>';
           section.appendChild(th);
         }
 
@@ -810,7 +814,12 @@
     pushCustom("semantic");
 
     var decors = selectedChips("decor").filter(function (c) { return textFor("decor", c); });
-    if (decors.length) lines.push("Surrounding the " + noun + ", there are " + joinList(decors.map(function (c) { return textFor("decor", c); })) + ".");
+    if (decors.length) {
+      lines.push("Surrounding the " + noun + ", there are " + joinList(decors.map(function (c) { return textFor("decor", c); })) + ".");
+      var dThick = decorThickness === "thin" ? "thin and flat, like cut-out shapes" :
+        (decorThickness === "thick" ? "chunky and noticeably thick" : "slightly dimensional with a subtle 3D feel");
+      lines.push("The surrounding decorations are " + dThick + ".");
+    }
     pushCustom("decor");
 
     var trims = selectedChips("trim").filter(function (c) { return textFor("trim", c); });
@@ -916,6 +925,8 @@
     var t = e.target;
     if (t.name === "ipb-thick") {
       thickness = t.value; compose();
+    } else if (t.name === "ipb-decor-thick") {
+      decorThickness = t.value; compose();
     } else if (t.id === "ipb-badge-pos") {
       badgePos = t.value; compose();
     } else if (t.id === "ipb-badge-shape") {
