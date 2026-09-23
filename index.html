@@ -501,8 +501,8 @@
   var thicknessCustom = "";
   var decorCfg = {};
   var decorThickness = "normal";
-  var badgePos = "bottom-right";
-  var badgeShape = "circular";
+  var badgePos = "bottom-right";   // 固定：状态角标总在右下角
+  var badgeShape = "circular";      // 固定：状态角标形状为圆形
   var sel = {}, overrides = {}, extras = {}, uid = 1;
   var aiFlag = {};
   MODULES.forEach(function (m) {
@@ -687,26 +687,6 @@
             '<label><input type="radio" name="ipb-thick" value="thin"' + (thickness === "thin" ? " checked" : "") + '> 极薄 Ultra-thin</label>' +
             '<input class="ipb-thick-custom" id="ipb-thick-custom" type="text" placeholder="自定义厚度（可选，自然语言：noticeably thick, about 20% of its width）" value="' + String(thicknessCustom).replace(/"/g, "&quot;") + '">';
           section.appendChild(th);
-        }
-
-        if (mod.key === "semantic") {
-          var opts = document.createElement("div");
-          opts.className = "ipb-selects";
-          opts.style.marginTop = "9px";
-          opts.innerHTML =
-            '<label class="ipb-field"><span>徽章位置</span><select class="ipb-ctrl" id="ipb-badge-pos">' +
-            '<option value="bottom-right">右下 bottom-right</option>' +
-            '<option value="top-right">右上 top-right</option>' +
-            '<option value="top-left">左上 top-left</option>' +
-            '<option value="center">居中 center</option></select></label>' +
-            '<label class="ipb-field"><span>徽章形状</span><select class="ipb-ctrl" id="ipb-badge-shape">' +
-            '<option value="circular">圆形 circular</option>' +
-            '<option value="rounded-square">圆角方形 rounded-square</option>' +
-            '<option value="squircle">超椭圆 squircle</option>' +
-            '<option value="hexagonal">六边形 hexagonal</option></select></label>';
-          opts.querySelector("#ipb-badge-pos").value = badgePos;
-          opts.querySelector("#ipb-badge-shape").value = badgeShape;
-          section.appendChild(opts);
         }
 
         section.appendChild(makeEditArea(mod));
@@ -1173,10 +1153,6 @@
       var ti0 = t.name.slice(12);
       var tc0 = decorCfg[ti0] || (decorCfg[ti0] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
       tc0.thickness = t.value; tc0.thickCustom = ""; compose();
-    } else if (t.id === "ipb-badge-pos") {
-      badgePos = t.value; compose();
-    } else if (t.id === "ipb-badge-shape") {
-      badgeShape = t.value; compose();
     } else if (t.classList && t.classList.contains("ipb-edit") && t.dataset.chip && t.dataset.mod !== "semantic") {
       var ch = chipById(t.dataset.mod, t.dataset.chip);
       if (!t.value.trim() && ch) {
