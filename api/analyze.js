@@ -5,6 +5,7 @@ const ALLOW = {
   geometry: ["block","soft","thin","squircle","faceted","slab","layer","cutouts"],
   detail: ["pills","chip","stripe","wave","bars","shieldmark","keyhole","peekcard","fold","slot","cutout"],
   semantic: ["rejected","approved","pending","warning","verified","locked","error","archived"],
+  decor: ["sparkles","orbit","dots","coins","glow","arrows","minibadge","bubbles","gridlines","ripple"],
   material: ["frosted","clay","rubber","resin","metal","paper","liquidmetal","darkglass","ceramic","acrylic","marble","neon"],
   trim: ["chrome","gold","gunmetal","siliconedge","rosegold","blacktitanium","liquidchrome","matteblack","clearcoat","mattecoat"],
   light: ["ambient","refraction","metalhl","studio","bounce","rim","prismatic","toplight","underglow"],
@@ -18,6 +19,7 @@ const VOCAB = [
 "geometry: block 大圆角倒角实心块 | soft 圆润充气软块 | thin 极简薄板 | squircle 超椭圆轮廓 | faceted 多面切割 | slab 圆角厚板 | layer 双层叠加 | cutouts 负空间挖孔",
 "detail: pills 三条内容线 | chip 芯片 | stripe 磁条 | wave 波形线 | bars 迷你K线 | shieldmark 盾形纹理 | keyhole 钥匙孔 | peekcard 露出的卡片 | fold 折角 | slot 卡槽 | cutout 圆形挖孔",
 "semantic: rejected ✕拒绝 | approved ✓通过 | pending ⏱待审 | warning !警告 | verified ◉认证 | locked 锁定 | error 错误 | archived 归档",
+"decor: sparkles 星光闪点 | orbit 轨道环 | dots 粒子点 | coins 悬浮金币 | glow 光晕 | arrows 流向箭头 | minibadge 小徽章 | bubbles 气泡 | gridlines 网格线 | ripple 环形波纹",
 "material: frosted 磨砂玻璃 | clay 软陶哑光 | rubber 硅胶 | resin 透明树脂 | metal 拉丝金属 | paper 哑光纸 | liquidmetal 液态金属 | darkglass 深色磨砂玻璃 | ceramic 釉面陶瓷 | acrylic 透明亚克力 | marble 抛光大理石 | neon 霓虹光效",
 "trim: chrome 抛光铬 | gold 金色金属 | gunmetal 深灰金属 | siliconedge 硅胶软边 | rosegold 玫瑰金 | blacktitanium 黑钛 | liquidchrome 液态铬边 | matteblack 哑光黑边 | clearcoat 高光清漆 | mattecoat 哑光磨砂面",
 "light: ambient 柔光环境光 | refraction 玻璃折射 | metalhl 金属细亮边 | studio 左上柔光棚拍 | bounce 环境反弹光 | rim 轮廓光 | prismatic 彩色折射光 | toplight 柔和顶光 | underglow 底部环境光",
@@ -27,14 +29,15 @@ const VOCAB = [
 ];
 
 const SYSTEM = `你是 3D 图标提示词解析器。用户发来一张 3D 图标参考图，请按 10 个维度分析并只输出一个 JSON 对象（不要 markdown、不要多余文字、不要注释）：
-{"object":{"zh":"","en":"","chips":[],"custom":null},"geometry":{"zh":"","en":"","chips":[],"custom":null},"detail":{"zh":"","en":"","chips":[],"custom":null},"semantic":{"zh":"","en":"","chips":[],"custom":null},"material":{"zh":"","en":"","chips":[],"custom":null},"trim":{"zh":"","en":"","chips":[],"custom":null},"light":{"zh":"","en":"","chips":[],"custom":null},"pose":{"zh":"","en":"","chips":[],"custom":null},"bg":{"zh":"","en":"","chips":[],"custom":null},"kw":{"zh":"","en":"","chips":[],"custom":null}}
+{"object":{"zh":"","en":"","chips":[],"custom":null},"geometry":{"zh":"","en":"","chips":[],"custom":null},"detail":{"zh":"","en":"","chips":[],"custom":null},"semantic":{"zh":"","en":"","chips":[],"custom":null},"decor":{"zh":"","en":"","chips":[],"custom":null},"material":{"zh":"","en":"","chips":[],"custom":null},"trim":{"zh":"","en":"","chips":[],"custom":null},"light":{"zh":"","en":"","chips":[],"custom":null},"pose":{"zh":"","en":"","chips":[],"custom":null},"bg":{"zh":"","en":"","chips":[],"custom":null},"kw":{"zh":"","en":"","chips":[],"custom":null}}
 
 严格规则：
 1. 所有 10 个 key 必须齐全，每个的 zh 与 en 都不能为空字符串；chips 必须是数组（可为空，不能是 null/缺省）。
 2. chips 只能从下方候选词表里选 id，优先选最贴切的，宁少勿乱。
 3. object.en 是"无冠词、单数可数名词"（如 bank card / vault safe）。候选里有就放 chips；没有则 chips 留空，custom.en 给该名词、custom.zh 给中文。
 4. semantic 只有画面里真的有角标才选：✕=rejected ✓绿勾=approved ⏱时钟=pending !（圆环/三角）=warning 或 error 锁=locked 盾+勾=verified 归档盒=archived。没有角标就 chips:[] 且 custom:null，不要臆测"通过/同意"。
-5. detail 是主体表面的内容图案：三条横线=pills 芯片方块=chip 磁条线=stripe 波形=wave 迷你K线柱=bars 盾纹=shieldmark 钥匙孔=keyhole 顶部露出卡片=peekcard 折角=fold 长槽=slot 圆形挖孔=cutout。
+5. decor(主体周边装饰)：sparkles星光闪点 orbit轨道环 dots粒子点 coins悬浮金币 glow光晕 arrows流向箭头 minibadge小徽章 bubbles气泡 gridlines网格线 ripple环形波纹；没有装饰就 chips:[] 且 custom:null。
+6. detail 是主体表面的内容图案：三条横线=pills 芯片方块=chip 磁条线=stripe 波形=wave 迷你K线柱=bars 盾纹=shieldmark 钥匙孔=keyhole 顶部露出卡片=peekcard 折角=fold 长槽=slot 圆形挖孔=cutout。
 6. object 常见映射：卡片=card 文档/文件=document 钱包=wallet 锁=lock 盾=shield 齿轮=gear 票据=receipt 手机=phone K线面板=kline 计算器=calculator 硬币=coin 文件夹=folder 信封=envelope 云=cloud 铃=bell 地球/球=globe 靶心=target 保险箱=safe。
 7. geometry：大圆角厚实块=block 圆润充气=soft 极简薄=thin 超椭圆=squircle 多面切割=faceted 圆角厚板=slab 双层=layer 挖孔负空间=cutouts。
 8. material：磨砂玻璃=frosted 深色磨砂玻璃=darkglass 液态金属/液态铬=liquidmetal 软陶=clay 硅胶=rubber 光面树脂=resin 透明亚克力=acrylic 磨砂金属=metal 纸=paper 陶瓷=ceramic 大理石=marble 霓虹发光=neon。

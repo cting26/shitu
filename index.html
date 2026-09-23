@@ -116,6 +116,10 @@
   #ipb .ipb-regionbar .ipb-btn { min-height: 26px; padding: 0 10px; font-size: 11.5px; }
   #ipb .ipb-regionbar .ipb-btn.active { background: linear-gradient(180deg, #f2c45c, #dfa439); border-color: transparent; color: #231803; font-weight: 700; }
 
+  #ipb .ipb-thick { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 9px; padding-top: 9px; border-top: 1px dashed var(--line); align-items: center; }
+  #ipb .ipb-thick label { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--fg); }
+  #ipb .ipb-thick input { accent-color: var(--accent); }
+
   @media (min-width: 881px) { #ipb .ipb-out { position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; } }
   @media (max-width: 560px) { #ipb .ipb-editrow { grid-template-columns: minmax(0, 1fr); } }
 </style>
@@ -285,6 +289,20 @@
 ,
         { id: "archived", label: "🗄 归档 Archived", adj: "archived", mark: "a small archive box icon", color: "soft dark gray" }
       ] },
+    { key: "decor", num: "④+", title: "主体物旁的装饰是什么 · Decorations", kind: "chips", multi: true,
+      hint: "可选 · 可多选：主体周围的装饰元素；勾选后可改文案，也可＋新增自定义",
+      chips: [
+        { id: "sparkles", label: "星光闪点 Sparkles", en: "small floating sparkles around the subject" },
+        { id: "orbit", label: "轨道环 Orbit ring", en: "a thin circular orbit ring around the subject" },
+        { id: "dots", label: "粒子点 Floating dots", en: "a few small floating dots around the subject" },
+        { id: "coins", label: "悬浮金币 Floating coins", en: "small floating coins around the subject" },
+        { id: "glow", label: "光晕 Soft glow", en: "a soft glow halo behind the subject" },
+        { id: "arrows", label: "流向箭头 Directional arrows", en: "small directional arrows nearby" },
+        { id: "minibadge", label: "小徽章 Mini badge", en: "a tiny floating badge near the subject" },
+        { id: "bubbles", label: "气泡 Bubbles", en: "translucent bubbles floating around" },
+        { id: "gridlines", label: "网格线 Grid lines", en: "thin grid lines in the background around the subject" },
+        { id: "ripple", label: "环形波纹 Ripple rings", en: "soft concentric ripple rings around the subject" }
+      ] },
     { key: "material", num: "⑤", title: "使用什么材质 · Material", kind: "chips", multi: true,
       hint: "可选 · 可多选：决定主体质感；勾选后可在下方改英文描述",
       chips: [
@@ -388,6 +406,7 @@
   ];
 
   var recipeSel = new Set(["glass"]);
+  var thickness = "thick";
   var badgePos = "bottom-right";
   var badgeShape = "circular";
   var sel = {}, overrides = {}, extras = {}, uid = 1;
@@ -547,6 +566,17 @@
         section.appendChild(makeCustomRows(mod.key, "输入自定义物体英文名词，如 rocket launcher / vault safe", "新增项"));
       } else {
         section.appendChild(chipGroup(mod.key, mod.chips, function (id) { return sel[mod.key].has(id); }));
+
+        if (mod.key === "geometry") {
+          var th = document.createElement("div");
+          th.className = "ipb-thick";
+          th.innerHTML =
+            '<span class="ipb-edit-cap">厚度 Thickness</span>' +
+            '<label><input type="radio" name="ipb-thick" value="thick"' + (thickness === "thick" ? " checked" : "") + '> 厚实 Thick / chunky</label>' +
+            '<label><input type="radio" name="ipb-thick" value="normal"' + (thickness === "normal" ? " checked" : "") + '> 正常 Moderate</label>' +
+            '<label><input type="radio" name="ipb-thick" value="thin"' + (thickness === "thin" ? " checked" : "") + '> 极薄 Ultra-thin</label>';
+          section.appendChild(th);
+        }
 
         if (mod.key === "semantic") {
           var opts = document.createElement("div");
@@ -754,7 +784,8 @@
 
     var matChips = selectedChips("material");
     var matText = matChips.length ? " made of " + joinList(matChips.map(function (c) { return textFor("material", c); })) : "";
-    lines.push("A thick " + (shape ? shape + " " : "") + noun + " icon" + matText + ".");
+    var thickPhrase = thickness === "thin" ? "an ultra-thin, wafer-like" : (thickness === "normal" ? "a moderately thick" : "a thick, chunky");
+    lines.push(capFirst(thickPhrase + " " + (shape ? shape + " " : "") + noun + " icon" + matText + "."));
     pushCustom("material");
 
     var detChips = selectedChips("detail").filter(function (c) { return textFor("detail", c); });
@@ -777,6 +808,10 @@
       lines.push(prefix + "there is a " + badgeShape + " badge " + matRef + ", containing " + sc.mark + " in " + sc.color + ".");
     });
     pushCustom("semantic");
+
+    var decors = selectedChips("decor").filter(function (c) { return textFor("decor", c); });
+    if (decors.length) lines.push("Surrounding the " + noun + ", there are " + joinList(decors.map(function (c) { return textFor("decor", c); })) + ".");
+    pushCustom("decor");
 
     var trims = selectedChips("trim").filter(function (c) { return textFor("trim", c); });
     if (trims.length) lines.push(capFirst(joinList(trims.map(function (c) { return textFor("trim", c); }))) + ".");
@@ -866,6 +901,7 @@
     sel.object = new Set();
     sel.detail = new Set();
     sel.semantic = new Set();
+    sel.decor = new Set();
     MODULES.forEach(function (m) {
       if (m.key === "recipe") return;
       overrides[m.key] = {};
@@ -878,7 +914,9 @@
 
   root.addEventListener("change", function (e) {
     var t = e.target;
-    if (t.id === "ipb-badge-pos") {
+    if (t.name === "ipb-thick") {
+      thickness = t.value; compose();
+    } else if (t.id === "ipb-badge-pos") {
       badgePos = t.value; compose();
     } else if (t.id === "ipb-badge-shape") {
       badgeShape = t.value; compose();
@@ -1022,6 +1060,7 @@
       geometry: { num: "②", title: "主体长什么结构" },
       detail:   { num: "③", title: "主体内部有什么内容" },
       semantic: { num: "④", title: "如何表达业务 / 状态" },
+      decor:    { num: "④+", title: "主体物旁的装饰" },
       material: { num: "⑤", title: "使用什么材质" },
       trim:     { num: "⑥", title: "边缘 / 表面怎么处理" },
       light:    { num: "⑦", title: "怎么打光" },
@@ -1043,7 +1082,7 @@
     var resActions = $id("ipb-res-actions");
     var stateEl = $id("ipb-ai-state"), autoAiChk = $id("ipb-auto-ai"), aiRunBtn = $id("ipb-ai-run");
     var lastDataUrl = "";
-    var ALL_TEN = ["object", "geometry", "detail", "semantic", "material", "trim", "light", "pose", "bg", "kw"];
+    var ALL_TEN = ["object", "geometry", "detail", "semantic", "decor", "material", "trim", "light", "pose", "bg", "kw"];
     function aiBase() {
       var ov = ($id("ipb-ai-url") && $id("ipb-ai-url").value.trim()) || localStorage.getItem("ipb_ai_base") || "";
       if (ov) return String(ov).replace(/\/$/, "");
@@ -1305,8 +1344,10 @@
         }
         if (!inside) top.push(c);
       }
+      var mainCnt = top.length ? top[0].cnt : 0;
+      var keep = top.filter(function (c, ci) { return ci === 0 || c.cnt >= 0.35 * mainCnt; });
       var k = 1 / scale;
-      var out = top.map(function (c) {
+      var out = keep.map(function (c) {
         var pad = Math.max(4, Math.round(8 * k));
         return { x0: Math.max(0, Math.round(c.x0 * k - pad)), y0: Math.max(0, Math.round(c.y0 * k - pad)),
                  x1: Math.min(img.naturalWidth, Math.round(c.x1 * k + pad)), y1: Math.min(img.naturalHeight, Math.round(c.y1 * k + pad)) };
