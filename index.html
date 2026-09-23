@@ -675,7 +675,7 @@
       dhead.className = "ipb-step-head";
       var dnum = document.createElement("span");
       dnum.className = "ipb-num";
-      dnum.textContent = "⑤⑥";
+      dnum.textContent = "5+";
       var dh = document.createElement("h3");
       dh.textContent = "每个旁物的材质 / 表面 / 厚度（逐个设置）";
       var dcount = document.createElement("span");
@@ -750,7 +750,9 @@
         card.appendChild(tl);
         dsec.appendChild(card);
       });
-      host.appendChild(dsec);
+      var semSec = host.querySelector("#ipb-h-semantic");
+      var semWrap = semSec ? semSec.closest("section") : null;
+      if (semWrap) host.insertBefore(dsec, semWrap); else host.appendChild(dsec);
     }
 
     updateRecipeDesc();
