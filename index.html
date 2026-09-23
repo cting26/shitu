@@ -881,8 +881,22 @@
 
   function addExtra(modKey, text) {
     var arr = extras[modKey] || [];
-    arr.push({ id: "e" + (uid++), text: text });
-    if (modKey === "decor") { render(); } else { renderCustom(modKey); updateCounts(); compose(); }
+    var hasZh = /[\u4e00-\u9fff]/.test(String(text || ""));
+    var item = { id: "e" + (uid++), text: hasZh ? "" : String(text || ""), zh: hasZh ? String(text || "") : "" };
+    arr.push(item);
+    function refresh() {
+      if (modKey === "decor") { render(); }
+      else { renderCustom(modKey); updateCounts(); compose(); }
+    }
+    refresh();
+    if (window.__ipbTranslate && String(text || "").trim()) {
+      var to = hasZh ? "en" : "zh";
+      window.__ipbTranslate(String(text).trim(), to, function (err, out) {
+        if (err || !out) return;
+        if (to === "en") item.text = String(out).trim(); else item.zh = String(out).trim();
+        refresh();
+      });
+    }
   }
   function removeExtra(modKey, i) {
     var arr = extras[modKey] || [];
