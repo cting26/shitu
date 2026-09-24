@@ -129,6 +129,7 @@
   #ipb .ipb-thick input.ipb-thick-custom { margin-left: 4px; flex: 1 1 220px; min-width: 140px; font: inherit; font-size: 11.5px; color: var(--fg); background: #101316; border: 1px solid var(--line); border-radius: 7px; padding: 4px 7px; }
 
   #ipb .ipb-decorcard { border: 1px solid var(--line); border-radius: 12px; padding: 9px 10px; margin-top: 8px; background: rgba(255,255,255,.02); }
+  #ipb .ipb-decorcard .ipb-editrow { margin-top: 6px; }
   #ipb .ipb-decorcard-title { font-size: 12px; font-weight: 750; margin-bottom: 6px; color: var(--accent); }
   #ipb .ipb-decorcard .ipb-edit-cap { margin-top: 6px; }
 
@@ -760,6 +761,31 @@
     });
 
     // ---- 旁物逐个设置（材质 / 表面 / 厚度）----
+    function appendDecorRows(card, itemId, kind, list, zhList) {
+      (list || []).forEach(function (txt, li) {
+        var row = document.createElement("div");
+        row.className = "ipb-editrow";
+        var lab = document.createElement("span");
+        lab.className = "ipb-edit-label";
+        var zz = (zhList || [])[li];
+        lab.textContent = zz || ("#" + (li + 1));
+        var bil = document.createElement("div");
+        bil.className = "ipb-bil";
+        var zhIn = document.createElement("input");
+        zhIn.className = "ipb-edit"; zhIn.dataset.decorExtra = kind; zhIn.dataset.item = itemId; zhIn.dataset.i = String(li); zhIn.dataset.lang = "zh";
+        zhIn.placeholder = "中文说明（可改，自动译英文）"; zhIn.value = zz || "";
+        var enIn = document.createElement("input");
+        enIn.className = "ipb-edit"; enIn.dataset.decorExtra = kind; enIn.dataset.item = itemId; enIn.dataset.i = String(li); enIn.dataset.lang = "en";
+        enIn.placeholder = "English（写入提示词）"; enIn.value = txt || "";
+        bil.appendChild(zhIn); bil.appendChild(enIn);
+        var rm = document.createElement("button");
+        rm.type = "button"; rm.className = "ipb-rm";
+        rm.dataset.decorExtraRemove = kind; rm.dataset.item = itemId; rm.dataset.i = String(li);
+        rm.setAttribute("aria-label", "删除该自定义项"); rm.textContent = "✕";
+        row.appendChild(lab); row.appendChild(bil); row.appendChild(rm);
+        card.appendChild(row);
+      });
+    }
     var decorItems = [];
     selectedChips("decor").forEach(function (c) { decorItems.push({ id: c.id, text: textFor("decor", c), label: c.label }); });
     (extras["decor"] || []).forEach(function (it) {
@@ -810,15 +836,7 @@
         ir.className = "ipb-custom";
         ir.innerHTML = '<input class="ipb-ctrl" data-decor-inner-input="' + item.id + '" placeholder="＋新增旁物内部内容英文…"><button type="button" class="ipb-btn" data-add-decor-inner="' + item.id + '">＋ 新增</button>';
         card.appendChild(ir);
-        if (cfg.innerExtra.length) {
-          cfg.innerExtra.forEach(function (txt, li) {
-            var pi = document.createElement("div");
-            pi.className = "ipb-res-en";
-            var zz = (cfg.innerExtraZh || [])[li];
-            pi.textContent = (zz ? zz + " · " : "") + txt;
-            card.appendChild(pi);
-          });
-        }
+        appendDecorRows(card, item.id, "inner", cfg.innerExtra, cfg.innerExtraZh);
 
         var ml = document.createElement("div");
         ml.className = "ipb-edit-cap";
@@ -829,15 +847,7 @@
         mr.className = "ipb-custom";
         mr.innerHTML = '<input class="ipb-ctrl" data-decor-mat-input="' + item.id + '" placeholder="＋新增旁物材质英文…"><button type="button" class="ipb-btn" data-add-decor-mat="' + item.id + '">＋ 新增</button>';
         card.appendChild(mr);
-        if (cfg.matExtra.length) {
-          cfg.matExtra.forEach(function (txt, li) {
-            var p2 = document.createElement("div");
-            p2.className = "ipb-res-en";
-            var zz = (cfg.matExtraZh || [])[li];
-            p2.textContent = (zz ? zz + " · " : "") + txt;
-            card.appendChild(p2);
-          });
-        }
+        appendDecorRows(card, item.id, "mat", cfg.matExtra, cfg.matExtraZh);
 
         var sl = document.createElement("div");
         sl.className = "ipb-edit-cap";
@@ -848,15 +858,7 @@
         sr.className = "ipb-custom";
         sr.innerHTML = '<input class="ipb-ctrl" data-decor-surf-input="' + item.id + '" placeholder="＋新增旁物表面英文…"><button type="button" class="ipb-btn" data-add-decor-surf="' + item.id + '">＋ 新增</button>';
         card.appendChild(sr);
-        if (cfg.surfExtra.length) {
-          cfg.surfExtra.forEach(function (txt, li) {
-            var p3 = document.createElement("div");
-            p3.className = "ipb-res-en";
-            var zz = (cfg.surfExtraZh || [])[li];
-            p3.textContent = (zz ? zz + " · " : "") + txt;
-            card.appendChild(p3);
-          });
-        }
+        appendDecorRows(card, item.id, "surf", cfg.surfExtra, cfg.surfExtraZh);
 
         var tl = document.createElement("div");
         tl.className = "ipb-thick";
@@ -1329,6 +1331,26 @@
       var dc = decorCfg[di] || (decorCfg[di] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
       dc.thickCustom = t.value; compose(); return;
     }
+    if (t.dataset && t.dataset.decorExtra) {
+      var dk = t.dataset.decorExtra, di = t.dataset.item, dj = Number(t.dataset.i), dl = t.dataset.lang || "en";
+      var dcfg = decorCfg[di]; if (!dcfg) return;
+      var dlist = dk === "inner" ? dcfg.innerExtra : (dk === "mat" ? dcfg.matExtra : dcfg.surfExtra);
+      var dzlist = dk === "inner" ? dcfg.innerExtraZh : (dk === "mat" ? dcfg.matExtraZh : dcfg.surfExtraZh);
+      if (dl === "zh") dzlist[dj] = t.value; else dlist[dj] = t.value;
+      if (window.__ipbTranslate) {
+        clearTimeout(t._trTimer);
+        t._trTimer = setTimeout(function () {
+          var src2 = String(t.value || "").trim(); if (!src2) return;
+          var to2 = dl === "zh" ? "en" : "zh";
+          window.__ipbTranslate(src2, to2, function (err, out) {
+            if (err || !out) return;
+            if (to2 === "en") dlist[dj] = String(out).trim(); else dzlist[dj] = String(out).trim();
+            render(); compose();
+          });
+        }, 700);
+      }
+      compose(); return;
+    }
     if (t.classList && t.classList.contains("ipb-edit")) {
       var mod = t.dataset.mod, chip = t.dataset.chip, ei = t.dataset.i, extra = t.dataset.extra;
       if (chip) {
@@ -1364,6 +1386,17 @@
       compose();
     }
   });  root.addEventListener("click", function (e) {
+    var drm = e.target.closest ? e.target.closest("[data-decor-extra-remove]") : null;
+    if (drm) {
+      var rk = drm.dataset.decorExtraRemove, ri = drm.dataset.item, rj = Number(drm.dataset.i);
+      var rc = decorCfg[ri]; if (rc) {
+        var rlist = rk === "inner" ? rc.innerExtra : (rk === "mat" ? rc.matExtra : rc.surfExtra);
+        var rzlist = rk === "inner" ? rc.innerExtraZh : (rk === "mat" ? rc.matExtraZh : rc.surfExtraZh);
+        if (rlist && rj >= 0 && rj < rlist.length) rlist.splice(rj, 1);
+        if (rzlist && rj >= 0 && rj < rzlist.length) rzlist.splice(rj, 1);
+      }
+      render(); compose(); return;
+    }
     var dinner = e.target.closest ? e.target.closest("[data-add-decor-inner]") : null;
     if (dinner) {
       var ii2 = dinner.dataset.addDecorInner;
