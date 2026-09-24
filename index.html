@@ -538,6 +538,17 @@
     { id: "dneon", label: "霓虹 Neon", en: "neon light material" },
     { id: "dfrost", label: "磨砂 Frosted", en: "frosted translucent material" }
   ];
+  var DECOR_INNER = [
+    { id: "dlines", label: "三条内容线 Three lines", en: "three horizontal rounded lines" },
+    { id: "dchip", label: "芯片 Chip", en: "a small chip" },
+    { id: "dstripe", label: "磁条 Stripe", en: "a thin stripe" },
+    { id: "dwave", label: "波形 Waveform", en: "a soft waveform line" },
+    { id: "dbars", label: "迷你K线 Candlestick bars", en: "small candlestick bars" },
+    { id: "dkeyhole", label: "钥匙孔 Keyhole", en: "a small keyhole" },
+    { id: "dshieldmark", label: "盾形纹 Shield emblem", en: "a subtle shield emblem" },
+    { id: "dcutout", label: "圆形挖孔 Circular cutout", en: "a small circular cutout" },
+    { id: "dglowdots", label: "发光圆点 Glowing dots", en: "a few glowing dots" }
+  ];
   var DECOR_SURFACES = [
     { id: "spolish", label: "抛光 Polished", en: "polished reflective surface" },
     { id: "smatte", label: "哑光 Matte", en: "soft matte surface" },
@@ -782,13 +793,32 @@
       dsec.appendChild(dhead); dsec.appendChild(dhint);
 
       decorItems.forEach(function (item) {
-        var cfg = decorCfg[item.id] || (decorCfg[item.id] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        var cfg = decorCfg[item.id] || (decorCfg[item.id] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
         var card = document.createElement("div");
         card.className = "ipb-decorcard";
         var ct = document.createElement("div");
         ct.className = "ipb-decorcard-title";
         ct.textContent = item.label || item.text;
         card.appendChild(ct);
+
+        var il = document.createElement("div");
+        il.className = "ipb-edit-cap";
+        il.textContent = "旁物内部内容";
+        card.appendChild(il);
+        card.appendChild(chipGroup("decorInner:" + item.id, DECOR_INNER, function (id) { return cfg.inner.has(id); }));
+        var ir = document.createElement("div");
+        ir.className = "ipb-custom";
+        ir.innerHTML = '<input class="ipb-ctrl" data-decor-inner-input="' + item.id + '" placeholder="＋新增旁物内部内容英文…"><button type="button" class="ipb-btn" data-add-decor-inner="' + item.id + '">＋ 新增</button>';
+        card.appendChild(ir);
+        if (cfg.innerExtra.length) {
+          cfg.innerExtra.forEach(function (txt, li) {
+            var pi = document.createElement("div");
+            pi.className = "ipb-res-en";
+            var zz = (cfg.innerExtraZh || [])[li];
+            pi.textContent = (zz ? zz + " · " : "") + txt;
+            card.appendChild(pi);
+          });
+        }
 
         var ml = document.createElement("div");
         ml.className = "ipb-edit-cap";
@@ -800,10 +830,11 @@
         mr.innerHTML = '<input class="ipb-ctrl" data-decor-mat-input="' + item.id + '" placeholder="＋新增旁物材质英文…"><button type="button" class="ipb-btn" data-add-decor-mat="' + item.id + '">＋ 新增</button>';
         card.appendChild(mr);
         if (cfg.matExtra.length) {
-          cfg.matExtra.forEach(function (txt) {
+          cfg.matExtra.forEach(function (txt, li) {
             var p2 = document.createElement("div");
             p2.className = "ipb-res-en";
-            p2.textContent = txt;
+            var zz = (cfg.matExtraZh || [])[li];
+            p2.textContent = (zz ? zz + " · " : "") + txt;
             card.appendChild(p2);
           });
         }
@@ -818,10 +849,11 @@
         sr.innerHTML = '<input class="ipb-ctrl" data-decor-surf-input="' + item.id + '" placeholder="＋新增旁物表面英文…"><button type="button" class="ipb-btn" data-add-decor-surf="' + item.id + '">＋ 新增</button>';
         card.appendChild(sr);
         if (cfg.surfExtra.length) {
-          cfg.surfExtra.forEach(function (txt) {
+          cfg.surfExtra.forEach(function (txt, li) {
             var p3 = document.createElement("div");
             p3.className = "ipb-res-en";
-            p3.textContent = txt;
+            var zz = (cfg.surfExtraZh || [])[li];
+            p3.textContent = (zz ? zz + " · " : "") + txt;
             card.appendChild(p3);
           });
         }
@@ -968,6 +1000,24 @@
     });
   }
 
+  function addDecorCustom(itemId, kind, text) {
+    var cfg = decorCfg[itemId] || (decorCfg[itemId] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
+    var list = kind === "inner" ? cfg.innerExtra : (kind === "mat" ? cfg.matExtra : cfg.surfExtra);
+    var zhList = kind === "inner" ? cfg.innerExtraZh : (kind === "mat" ? cfg.matExtraZh : cfg.surfExtraZh);
+    var hasZh = /[\u4e00-\u9fff]/.test(String(text || ""));
+    list.push(hasZh ? "" : String(text || ""));
+    zhList.push(hasZh ? String(text || "") : "");
+    var idx = list.length - 1;
+    if (window.__ipbTranslate && String(text || "").trim()) {
+      var to = hasZh ? "en" : "zh";
+      window.__ipbTranslate(String(text).trim(), to, function (err, out) {
+        if (err || !out) return;
+        if (to === "en") list[idx] = String(out).trim(); else zhList[idx] = String(out).trim();
+        render(); compose();
+      });
+    }
+    render(); compose();
+  }
   function addExtra(modKey, text) {
     var arr = extras[modKey] || [];
     var hasZh = /[\u4e00-\u9fff]/.test(String(text || ""));
@@ -1071,14 +1121,21 @@
         var m = DECOR_MATERIALS.filter(function (x) { return x.id === id; })[0];
         if (m) mats.push(m.en);
       });
-      (cfg.matExtra || []).forEach(function (t) { if (t) mats.push(t); });
+      (cfg.matExtra || []).forEach(function (t) { if (t) mats.push(String(t).replace(/[.,;]+$/, "")); });
       var surfs = [];
       (cfg.surf ? Array.from(cfg.surf) : []).forEach(function (id) {
         var m2 = DECOR_SURFACES.filter(function (x) { return x.id === id; })[0];
         if (m2) surfs.push(m2.en);
       });
-      (cfg.surfExtra || []).forEach(function (t) { if (t) surfs.push(t); });
+      (cfg.surfExtra || []).forEach(function (t) { if (t) surfs.push(String(t).replace(/[.,;]+$/, "")); });
+      var inners = [];
+      (cfg.inner ? Array.from(cfg.inner) : []).forEach(function (id) {
+        var m3 = DECOR_INNER.filter(function (x) { return x.id === id; })[0];
+        if (m3) inners.push(m3.en);
+      });
+      (cfg.innerExtra || []).forEach(function (t) { if (t) inners.push(String(t).replace(/[.,;]+$/, "")); });
       var bits = [];
+      if (inners.length) bits.push("featuring " + joinList(inners));
       if (mats.length) bits.push("made of " + joinList(mats));
       if (surfs.length) bits.push("with " + joinList(surfs));
       var dThick = cfg.thickCustom ? cfg.thickCustom : (cfg.thickness === "thin" ? "thin and flat, like cut-out shapes" : (cfg.thickness === "thick" ? "chunky and noticeably thick" : ""));
@@ -1203,7 +1260,7 @@
       if ($id("ipb-thick-custom")) $id("ipb-thick-custom").value = "";
     } else if (t.name && t.name.indexOf("decor-thick-") === 0) {
       var ti0 = t.name.slice(12);
-      var tc0 = decorCfg[ti0] || (decorCfg[ti0] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+      var tc0 = decorCfg[ti0] || (decorCfg[ti0] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
       tc0.thickness = t.value; tc0.thickCustom = ""; compose();
     } else if (t.classList && t.classList.contains("ipb-edit") && t.dataset.chip && t.dataset.mod !== "semantic") {
       var ch = chipById(t.dataset.mod, t.dataset.chip);
@@ -1214,19 +1271,24 @@
       }
     } else if (t.classList && t.classList.contains("ipb-in")) {
       var modKey = t.dataset.mod, id = t.dataset.id;
+      if (modKey && modKey.indexOf("decorInner:") === 0) {
+        var ii = modKey.slice(11), ic = decorCfg[ii] || (decorCfg[ii] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
+        if (t.checked) ic.inner.add(id); else ic.inner.delete(id);
+        compose(); return;
+      }
       if (modKey && modKey.indexOf("decorMat:") === 0) {
-        var mi = modKey.slice(9), mc = decorCfg[mi] || (decorCfg[mi] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        var mi = modKey.slice(9), mc = decorCfg[mi] || (decorCfg[mi] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
         if (t.checked) mc.mat.add(id); else mc.mat.delete(id);
         compose(); return;
       }
       if (modKey && modKey.indexOf("decorSurf:") === 0) {
-        var si = modKey.slice(10), sc = decorCfg[si] || (decorCfg[si] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        var si = modKey.slice(10), sc = decorCfg[si] || (decorCfg[si] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
         if (t.checked) sc.surf.add(id); else sc.surf.delete(id);
         compose(); return;
       }
       if (t.name && t.name.indexOf("decor-thick-") === 0) {
         var ti = t.name.slice(12);
-        var tc = decorCfg[ti] || (decorCfg[ti] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+        var tc = decorCfg[ti] || (decorCfg[ti] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
         tc.thickness = t.value; tc.thickCustom = ""; compose(); return;
       }
       if (modKey === "recipe") {
@@ -1264,7 +1326,7 @@
     }
     if (t.dataset && t.dataset.decorThickCustom) {
       var di = t.dataset.decorThickCustom;
-      var dc = decorCfg[di] || (decorCfg[di] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+      var dc = decorCfg[di] || (decorCfg[di] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
       dc.thickCustom = t.value; compose(); return;
     }
     if (t.classList && t.classList.contains("ipb-edit")) {
@@ -1302,15 +1364,20 @@
       compose();
     }
   });  root.addEventListener("click", function (e) {
+    var dinner = e.target.closest ? e.target.closest("[data-add-decor-inner]") : null;
+    if (dinner) {
+      var ii2 = dinner.dataset.addDecorInner;
+      var inpI = stepsEl().querySelector('input[data-decor-inner-input="' + ii2 + '"]');
+      var vi = inpI ? inpI.value.trim() : "";
+      if (vi) { inpI.value = ""; addDecorCustom(ii2, "inner", vi); }
+      return;
+    }
     var dmat = e.target.closest ? e.target.closest("[data-add-decor-mat]") : null;
     if (dmat) {
       var mi2 = dmat.dataset.addDecorMat;
       var inp2 = stepsEl().querySelector('input[data-decor-mat-input="' + mi2 + '"]');
       var v2 = inp2 ? inp2.value.trim() : "";
-      if (v2) {
-        var c2 = decorCfg[mi2] || (decorCfg[mi2] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
-        c2.matExtra.push(v2); inp2.value = ""; render(); compose();
-      }
+      if (v2) { inp2.value = ""; addDecorCustom(mi2, "mat", v2); }
       return;
     }
     var dsurf = e.target.closest ? e.target.closest("[data-add-decor-surf]") : null;
@@ -1318,10 +1385,7 @@
       var si2 = dsurf.dataset.addDecorSurf;
       var inp3 = stepsEl().querySelector('input[data-decor-surf-input="' + si2 + '"]');
       var v3 = inp3 ? inp3.value.trim() : "";
-      if (v3) {
-        var c3 = decorCfg[si2] || (decorCfg[si2] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
-        c3.surfExtra.push(v3); inp3.value = ""; render(); compose();
-      }
+      if (v3) { inp3.value = ""; addDecorCustom(si2, "surf", v3); }
       return;
     }
     var addBtn = e.target.closest ? e.target.closest("[data-add-custom]") : null;
@@ -1616,7 +1680,10 @@
         if (r.modKey === "decor" && r.items && r.items.length) {
           r.items.forEach(function (it) {
             if (!it || !it.id) return;
-            var cfg = decorCfg[it.id] || (decorCfg[it.id] = { mat: new Set(), surf: new Set(), matExtra: [], surfExtra: [], thickness: "", thickCustom: "" });
+            var cfg = decorCfg[it.id] || (decorCfg[it.id] = { inner: new Set(), innerExtra: [], innerExtraZh: [], mat: new Set(), surf: new Set(), matExtra: [], matExtraZh: [], surfExtra: [], surfExtraZh: [], thickness: "", thickCustom: "" });
+            cfg.inner = new Set((it.inner && it.inner.chips) || []);
+            cfg.innerExtra = [];
+            if (it.inner && it.inner.custom && it.inner.custom.en) cfg.innerExtra.push(String(it.inner.custom.en).trim());
             cfg.mat = new Set((it.material && it.material.chips) || []);
             cfg.surf = new Set((it.surface && it.surface.chips) || []);
             cfg.matExtra = []; cfg.surfExtra = [];
